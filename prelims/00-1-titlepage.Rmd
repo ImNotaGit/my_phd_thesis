@@ -5,13 +5,13 @@
 \small\normalsize
 \begin{center}
 
-\large{{THIS IS THE TITLE OF YOUR DISSERTATION \\
-ALL LETTERS SHOULD BE CAPITALIZED}}\\
+\large{{METABOLIC MODELING OF ANTI-CANCER CD8 T CELLS\\
+AND SARS-COV-2 INFECTION}}\\
 \ \\
 \ \\
 \large{by} \\
 \ \\
-\large{Your name}
+\large{Kuoyuan Cheng}
 \ \\
 \ \\
 \ \\
@@ -21,14 +21,15 @@ Dissertation submitted to the Faculty of the Graduate School of the \\
 University of Maryland, College Park in partial fulfillment \\
 of the requirements for the degree of \\
 Doctor of Philosophy \\
-Year
+2021
 \end{center}
 
 \vspace{7.5em}
 
 \noindent Advisory Committee: \newline
-\indent Professor A, Chair/Advisor \newline
-\indent Dr. B, Co-Advisor \newline
-\indent Professor C \newline
-\indent Professor D \newline
-\indent Professor E
+\indent Professor Philip Johnson, Chair/Advisor \newline
+\indent Dr. Eytan Ruppin, Co-Advisor \newline
+\indent Professor Stephen M. Mount \newline
+\indent Professor Najib M. El-Sayed \newline
+\indent Dr. Sridhar Hannenhalli \newline
+\indent Dr. Stefan Ambs

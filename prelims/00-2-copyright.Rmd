@@ -9,9 +9,9 @@
 
 \begin{center}
 \large{\copyright \hbox{ }Copyright by\\
-Your name
+Kuoyuan Cheng
 \\
-Year}
+2021}
 \end{center}
 
 \vfill

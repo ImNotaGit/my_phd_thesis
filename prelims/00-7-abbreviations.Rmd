@@ -12,6 +12,43 @@
 \vspace{3pt}
 
 \begin{tabular}{ll}
-UMD & University of Maryland \\
-NIH & National Institutes of Health
+ACE2 & Angiotensin-Converting Enzyme 2 \\
+ACT & Adoptive Cell Transfer \\
+ACHR & Artificial Centering Hit-and-Run \\
+CAR-T & Chimeric Antigen Receptor-T cell \\
+COVID-19 & Coronavirus Disease 2019 \\
+DMV & Double-Membrane Vesicles \\
+ER & Endoplasmic Reticulum \\
+ERGIC & Endoplasmic Reticulum–Golgi Intermediate Compartment \\
+EUA & Emergency Use Authorization \\
+FBA & Flux Balance Analysis \\
+FDA & Food and Drug Administration \\
+GEM & GEnome-scale Metabolic modeling \\
+HPI & Host-Pathogen Interaction \\
+ICB & Immune Checkpoint Blockade \\
+ICU & Intensive Care Unit \\
+IFN & InterFeroN \\
+IL & InterLeukin \\
+iMAT & integrative Metabolic Analysis Tool \\
+MERS & Middle East Respiratory Syndrome \\
+MERS-CoV & Middle East Respiratory Syndrome CoronaVirus \\
+MOMA & Minimization Of Metabolic Adjustment \\
+MS & Mass Spectrometry \\
+MTA & Metabolic Transformation Algorithm \\
+NIH & National Institutes of Health \\
+ORF & Open Reading Frame \\
+PPI & Protein-Protein Interaction \\
+RBD & Receptor Binding Domain \\
+RBM & Receptor Binding Motif \\
+RdRP & RNA-dependent RNA Polymerase \\
+RNA-seq & RNA-sequencing \\
+RTC & Replication and Transcription Complex \\
+rMTA & robust Metabolic Transformation Algorithm \\
+SARS & Severe Acute Respiratory Syndrome \\
+SARS-CoV & Severe Acute Respiratory Syndrome CoronaVirus \\
+SARS-CoV-2 & Severe Acute Respiratory Syndrome CoronaVirus 2 \\
+scRNA-seq & single-cell RNA-sequencing \\
+TCA & TriCarboxylic Acid \\
+TRS & Transcription Regulatory Sequences \\
+WHO & World Health Organization
 \end{tabular}
