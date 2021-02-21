@@ -29,6 +29,7 @@ ER & Endoplasmic Reticulum \\
 ERGIC & Endoplasmic Reticulum–Golgi Intermediate Compartment \\
 ETC & Electron Transport Chain \\
 EUA & Emergency Use Authorization \\
+FAO & Fatty Acid Oxidation \\
 FBA & Flux Balance Analysis \\
 FDA & Food and Drug Administration \\
 FVA & Flux Variability Analysis \\
@@ -40,6 +41,7 @@ ICB & Immune Checkpoint Blockade \\
 ICU & Intensive Care Unit \\
 IFN & Interferon \\
 IL & Interleukin \\
+IMP & Inosine 5'-Monophosphate \\
 iMAT & Integrative Metabolic Analysis Tool \\
 KD & Knockdown \\
 KO & Knockout \\
@@ -60,11 +62,13 @@ ORF & Open Reading Frame \\
 OXPHOS & Oxidative Phosphorylation \\
 PPI & Protein-Protein Interaction \\
 PPP & Pentose Phosphate Pathway \\
+PRPP & Phosphoribosyl Pyrophosphate \\
 QP & Quadratic Programming \\
 RBD & Receptor Binding Domain \\
 RBM & Receptor Binding Motif \\
 RdRP & RNA-Dependent RNA Polymerase \\
 RNA-seq & RNA-Sequencing \\
+ROS & Reactive Oxygen Species \\
 RTC & Replication and Transcription Complex \\
 rMTA & Robust Metabolic Transformation Algorithm \\
 SARS & Severe Acute Respiratory Syndrome \\
@@ -72,7 +76,9 @@ SARS-CoV & Severe Acute Respiratory Syndrome Coronavirus \\
 SARS-CoV-2 & Severe Acute Respiratory Syndrome Coronavirus 2 \\
 scRNA-seq & Single-Cell RNA-Sequencing \\
 TCA & Tricarboxylic Acid \\
+THF & Tetrahydrofolate \\
 TRS & Transcription Regulatory Sequences \\
+UMP & Uridine 5'-Monophosphate \\
 WHO & World Health Organization \\
 WT & Wild-Type
 \end{tabular}
