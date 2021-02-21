@@ -33,7 +33,7 @@ lof: true
 loa: '`r if(knitr:::is_latex_output()) paste(readLines(here::here("prelims", "00-7-abbreviations.Rmd")), collapse = "\n  ")`'
 
 # Specify the location of the bibliography below (one or more files)
-bibliography: [bib/covid.bib]
+bibliography: [bib/gem.bib, bib/covid.bib]
 # Download your specific csl file and refer to it in the line below.
 csl: csl/apa.csl
 ---
@@ -49,5 +49,4 @@ knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE)
 The {-} option below means that the title of this chapter not be numbered.
 -->
 
-# Introduction {-}
 

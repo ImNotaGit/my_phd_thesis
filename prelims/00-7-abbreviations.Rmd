@@ -12,43 +12,67 @@
 \vspace{3pt}
 
 \begin{tabular}{ll}
+Ac-CoA & Acetyl Coenzyme A \\
 ACE2 & Angiotensin-Converting Enzyme 2 \\
 ACT & Adoptive Cell Transfer \\
 ACHR & Artificial Centering Hit-and-Run \\
-CAR-T & Chimeric Antigen Receptor-T cell \\
+ATP & Adenosine Triphosphate \\
+BALF & Bronchoalveolar Lavage Fluid \\
+CAR-T & Chimeric Antigen Receptor-T Cell \\
+CBM & Constraint-Based Model (or Method/Modeling) \\
+CHRR & Coordinate Hit-and-Run with Rounding \\
+COBRA & Constraint-Based Reconstruction and Analysis \\
 COVID-19 & Coronavirus Disease 2019 \\
+DE & Differential Expression \\
 DMV & Double-Membrane Vesicles \\
 ER & Endoplasmic Reticulum \\
 ERGIC & Endoplasmic Reticulum–Golgi Intermediate Compartment \\
+ETC & Electron Transport Chain \\
 EUA & Emergency Use Authorization \\
 FBA & Flux Balance Analysis \\
 FDA & Food and Drug Administration \\
-GEM & GEnome-scale Metabolic modeling \\
+FVA & Flux Variability Analysis \\
+GEM & Genome-Scale Metabolic Model (or Modeling) \\
+GPR & Gene-Protein-Reaction Associations \\
+GSEA & Gene Set Enrichment Analysis \\
 HPI & Host-Pathogen Interaction \\
 ICB & Immune Checkpoint Blockade \\
 ICU & Intensive Care Unit \\
-IFN & InterFeroN \\
-IL & InterLeukin \\
-iMAT & integrative Metabolic Analysis Tool \\
+IFN & Interferon \\
+IL & Interleukin \\
+iMAT & Integrative Metabolic Analysis Tool \\
+KD & Knockdown \\
+KO & Knockout \\
+LP & Linear Programming \\
 MERS & Middle East Respiratory Syndrome \\
-MERS-CoV & Middle East Respiratory Syndrome CoronaVirus \\
-MOMA & Minimization Of Metabolic Adjustment \\
+MERS-CoV & Middle East Respiratory Syndrome Coronavirus \\
+MIP & Mixed Integer Programming \\
+MILP & Mixed Integer Linear Programming \\
+MIQP & Mixed Integer Quadratic Programming \\
+MOMA & Minimization of Metabolic Adjustment \\
 MS & Mass Spectrometry \\
 MTA & Metabolic Transformation Algorithm \\
+NAD\textsuperscript{+}/NADH & Nicotinamide Adenine Dinucleotide \\
+NADP\textsuperscript{+}/NADPH & Nicotinamide Adenine Dinucleotide Phosphate \\
 NIH & National Institutes of Health \\
+NLP & Non-Linear Programming \\
 ORF & Open Reading Frame \\
+OXPHOS & Oxidative Phosphorylation \\
 PPI & Protein-Protein Interaction \\
+PPP & Pentose Phosphate Pathway \\
+QP & Quadratic Programming \\
 RBD & Receptor Binding Domain \\
 RBM & Receptor Binding Motif \\
-RdRP & RNA-dependent RNA Polymerase \\
-RNA-seq & RNA-sequencing \\
+RdRP & RNA-Dependent RNA Polymerase \\
+RNA-seq & RNA-Sequencing \\
 RTC & Replication and Transcription Complex \\
-rMTA & robust Metabolic Transformation Algorithm \\
+rMTA & Robust Metabolic Transformation Algorithm \\
 SARS & Severe Acute Respiratory Syndrome \\
-SARS-CoV & Severe Acute Respiratory Syndrome CoronaVirus \\
-SARS-CoV-2 & Severe Acute Respiratory Syndrome CoronaVirus 2 \\
-scRNA-seq & single-cell RNA-sequencing \\
-TCA & TriCarboxylic Acid \\
+SARS-CoV & Severe Acute Respiratory Syndrome Coronavirus \\
+SARS-CoV-2 & Severe Acute Respiratory Syndrome Coronavirus 2 \\
+scRNA-seq & Single-Cell RNA-Sequencing \\
+TCA & Tricarboxylic Acid \\
 TRS & Transcription Regulatory Sequences \\
-WHO & World Health Organization
+WHO & World Health Organization \\
+WT & Wild-Type
 \end{tabular}
