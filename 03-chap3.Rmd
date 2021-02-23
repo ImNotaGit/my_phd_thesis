@@ -5,7 +5,7 @@ library(ComplexHeatmap)
 ```
 
 
-# Metabolic modeling of CD8 T cell for anti-cancer immunotherapy {#ucp2} ^[The work of this chapter has been organized in the journal article format and submitted to a journal, which is under peer-review as of Mar 2020. Many contents of this chapter are taken from the above article, involving direct quotes with minor rephrasing.]
+# Metabolic modeling of CD8 T cell for anti-cancer immunotherapy ^[The work of this chapter has been organized in the journal article format and submitted to a journal, which is under peer-review as of Mar 2020. Many contents of this chapter are taken from the above article, involving direct quotes with minor rephrasing.] {#ucp2}
 
 ## Introduction
 

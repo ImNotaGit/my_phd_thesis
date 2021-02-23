@@ -11,19 +11,22 @@
 
 \vspace{3pt}
 
-\begin{tabular}{ll}
+\begin{longtable}{ll}
 Ac-CoA & Acetyl Coenzyme A \\
 ACE2 & Angiotensin-Converting Enzyme 2 \\
 ACT & Adoptive Cell Transfer \\
 ACHR & Artificial Centering Hit-and-Run \\
+ALL & Acute Lymphoblastic Leukemia \\
 ATP & Adenosine Triphosphate \\
 BALF & Bronchoalveolar Lavage Fluid \\
 CAR-T & Chimeric Antigen Receptor-T Cell \\
 CBM & Constraint-Based Model (or Method/Modeling) \\
 CHRR & Coordinate Hit-and-Run with Rounding \\
+CLL & Chronic Lymphocytic Leukemia \\
 COBRA & Constraint-Based Reconstruction and Analysis \\
 COVID-19 & Coronavirus Disease 2019 \\
 DE & Differential Expression \\
+DLBCL & Diffuse Large B-Cell Lymphoma \\
 DMV & Double-Membrane Vesicles \\
 ER & Endoplasmic Reticulum \\
 ERGIC & Endoplasmic Reticulum–Golgi Intermediate Compartment \\
@@ -41,13 +44,14 @@ ICB & Immune Checkpoint Blockade \\
 ICU & Intensive Care Unit \\
 IFN & Interferon \\
 IL & Interleukin \\
-IMP & Inosine 5'-Monophosphate \\
+IMP & Inosine 5-Monophosphate \\
 iMAT & Integrative Metabolic Analysis Tool \\
 KD & Knockdown \\
 KO & Knockout \\
 LP & Linear Programming \\
 MERS & Middle East Respiratory Syndrome \\
 MERS-CoV & Middle East Respiratory Syndrome Coronavirus \\
+MHC & Major Histocompatibility Complexes \\
 MIP & Mixed Integer Programming \\
 MILP & Mixed Integer Linear Programming \\
 MIQP & Mixed Integer Quadratic Programming \\
@@ -57,6 +61,7 @@ MTA & Metabolic Transformation Algorithm \\
 NAD\textsuperscript{+}/NADH & Nicotinamide Adenine Dinucleotide \\
 NADP\textsuperscript{+}/NADPH & Nicotinamide Adenine Dinucleotide Phosphate \\
 NIH & National Institutes of Health \\
+NK & Natural Killer \\
 NLP & Non-Linear Programming \\
 ORF & Open Reading Frame \\
 OXPHOS & Oxidative Phosphorylation \\
@@ -76,9 +81,13 @@ SARS-CoV & Severe Acute Respiratory Syndrome Coronavirus \\
 SARS-CoV-2 & Severe Acute Respiratory Syndrome Coronavirus 2 \\
 scRNA-seq & Single-Cell RNA-Sequencing \\
 TCA & Tricarboxylic Acid \\
+TCR & T Cell Receptor \\
 THF & Tetrahydrofolate \\
+TIL & Tumor-Infiltrating Lymphocytes \\
+TMB & Tumor Mutational Burden \\
+TME & Tumor Microenvironment \\
 TRS & Transcription Regulatory Sequences \\
-UMP & Uridine 5'-Monophosphate \\
+UMP & Uridine 5-Monophosphate \\
 WHO & World Health Organization \\
-WT & Wild-Type
-\end{tabular}
+WT & Wild-Type \\
+\end{longtable}

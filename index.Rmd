@@ -33,7 +33,7 @@ lof: true
 loa: '`r if(knitr:::is_latex_output()) paste(readLines(here::here("prelims", "00-7-abbreviations.Rmd")), collapse = "\n  ")`'
 
 # Specify the location of the bibliography below (one or more files)
-bibliography: [bib/gem.bib, bib/covid.bib]
+bibliography: [bib/gem.bib, bib/cancer_immune.bib, bib/covid.bib]
 # Download your specific csl file and refer to it in the line below.
 csl: csl/apa.csl
 ---

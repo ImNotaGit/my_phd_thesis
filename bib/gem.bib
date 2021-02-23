@@ -562,3 +562,455 @@ SUPPLEMENTARY INFORMATION: Supplementary data are available at Bioinformatics on
 	doi = {10.1017/CBO9781139854610},
 	file = {Snapshot:/Users/chengk6/Zotero/storage/TGD6EIU3/7F8445BC87019806B3625DFC4B5C27D4.html:text/html;Submitted Version:/Users/chengk6/Zotero/storage/8YDPPX29/Palsson - 2015 - Systems Biology Constraint-based Reconstruction a.pdf:application/pdf}
 }
+
+@book{nelson_lehninger_2017,
+	title = {Lehninger principles of biochemistry},
+	isbn = {978-1-319-15087-7},
+	url = {http://catalog.hathitrust.org/api/volumes/oclc/986827885.html},
+	abstract = {"Lehninger Principles of Biochemistry ... brings clarity and coherence to an often unwieldy discipline, offering a thoroughly updated survey of biochemistry's enduring principles, definitive discoveries, and groundbreaking new advances with each edition. This new Seventh Edition maintains the qualities that have distinguished the text since Albert Lehninger's original edition--clear writing, careful explanations of difficult concepts, helpful problem-solving support, and insightful communication of contemporary biochemistry's core ideas, new techniques, and pivotal discoveries. Again, David Nelson and Michael Cox introduce students to an extraordinary amount of exciting new findings without an overwhelming amount of extra discussion or detail."--},
+	language = {English},
+	urldate = {2021-02-20},
+	author = {Nelson, David L and Cox, Michael M and Lehninger, Albert L},
+	year = {2017},
+	note = {OCLC: 1051351967}
+}
+
+@article{becker_context-specific_2008,
+	title = {Context-specific metabolic networks are consistent with experiments},
+	volume = {4},
+	issn = {1553-7358},
+	doi = {10.1371/journal.pcbi.1000082},
+	abstract = {Reconstructions of cellular metabolism are publicly available for a variety of different microorganisms and some mammalian genomes. To date, these reconstructions are "genome-scale" and strive to include all reactions implied by the genome annotation, as well as those with direct experimental evidence. Clearly, many of the reactions in a genome-scale reconstruction will not be active under particular conditions or in a particular cell type. Methods to tailor these comprehensive genome-scale reconstructions into context-specific networks will aid predictive in silico modeling for a particular situation. We present a method called Gene Inactivity Moderated by Metabolism and Expression (GIMME) to achieve this goal. The GIMME algorithm uses quantitative gene expression data and one or more presupposed metabolic objectives to produce the context-specific reconstruction that is most consistent with the available data. Furthermore, the algorithm provides a quantitative inconsistency score indicating how consistent a set of gene expression data is with a particular metabolic objective. We show that this algorithm produces results consistent with biological experiments and intuition for adaptive evolution of bacteria, rational design of metabolic engineering strains, and human skeletal muscle cells. This work represents progress towards producing constraint-based models of metabolism that are specific to the conditions where the expression profiling data is available.},
+	language = {eng},
+	number = {5},
+	journal = {PLoS Comput Biol},
+	author = {Becker, Scott A. and Palsson, Bernhard O.},
+	month = may,
+	year = {2008},
+	pmid = {18483554},
+	pmcid = {PMC2366062},
+	keywords = {Algorithms, Computer Simulation, Gene Expression Profiling, Models, Biological, Proteome, Research Design, Signal Transduction},
+	pages = {e1000082},
+	file = {Full Text:/Users/chengk6/Zotero/storage/SFPDHE95/Becker and Palsson - 2008 - Context-specific metabolic networks are consistent.pdf:application/pdf}
+}
+
+@article{schmidt_gim3e_2013,
+	title = {{GIM3E}: condition-specific models of cellular metabolism developed from metabolomics and expression data},
+	volume = {29},
+	issn = {1367-4811},
+	shorttitle = {{GIM3E}},
+	doi = {10.1093/bioinformatics/btt493},
+	abstract = {MOTIVATION: Genome-scale metabolic models have been used extensively to investigate alterations in cellular metabolism. The accuracy of these models to represent cellular metabolism in specific conditions has been improved by constraining the model with omics data sources. However, few practical methods for integrating metabolomics data with other omics data sources into genome-scale models of metabolism have been developed.
+RESULTS: GIM(3)E (Gene Inactivation Moderated by Metabolism, Metabolomics and Expression) is an algorithm that enables the development of condition-specific models based on an objective function, transcriptomics and cellular metabolomics data. GIM(3)E establishes metabolite use requirements with metabolomics data, uses model-paired transcriptomics data to find experimentally supported solutions and provides calculations of the turnover (production/consumption) flux of metabolites. GIM(3)E was used to investigate the effects of integrating additional omics datasets to create increasingly constrained solution spaces of Salmonella Typhimurium metabolism during growth in both rich and virulence media. This integration proved to be informative and resulted in a requirement of additional active reactions (12 in each case) or metabolites (26 or 29, respectively). The addition of constraints from transcriptomics also impacted the allowed solution space, and the cellular metabolites with turnover fluxes that were necessarily altered by the change in conditions increased from 118 to 271 of 1397.
+AVAILABILITY: GIM(3)E has been implemented in Python and requires a COBRApy 0.2.x. The algorithm and sample data described here are freely available at: http://opencobra.sourceforge.net/
+CONTACTS: brianjamesschmidt@gmail.com},
+	language = {eng},
+	number = {22},
+	journal = {Bioinformatics},
+	author = {Schmidt, Brian J. and Ebrahim, Ali and Metz, Thomas O. and Adkins, Joshua N. and Palsson, Bernhard Ø and Hyduke, Daniel R.},
+	month = nov,
+	year = {2013},
+	pmid = {23975765},
+	pmcid = {PMC3810847},
+	keywords = {Algorithms, Gene Expression Profiling, Genome, Metabolome, Metabolomics, Models, Biological, Salmonella typhimurium, Virulence Factors},
+	pages = {2900--2908},
+	file = {Full Text:/Users/chengk6/Zotero/storage/ILA9Q9IX/Schmidt et al. - 2013 - GIM3E condition-specific models of cellular metab.pdf:application/pdf}
+}
+
+@article{lee_improving_2012,
+	title = {Improving metabolic flux predictions using absolute gene expression data},
+	volume = {6},
+	issn = {1752-0509},
+	doi = {10.1186/1752-0509-6-73},
+	abstract = {BACKGROUND: Constraint-based analysis of genome-scale metabolic models typically relies upon maximisation of a cellular objective function such as the rate or efficiency of biomass production. Whilst this assumption may be valid in the case of microorganisms growing under certain conditions, it is likely invalid in general, and especially for multicellular organisms, where cellular objectives differ greatly both between and within cell types. Moreover, for the purposes of biotechnological applications, it is normally the flux to a specific metabolite or product that is of interest rather than the rate of production of biomass per se.
+RESULTS: An alternative objective function is presented, that is based upon maximising the correlation between experimentally measured absolute gene expression data and predicted internal reaction fluxes. Using quantitative transcriptomics data acquired from Saccharomyces cerevisiae cultures under two growth conditions, the method outperforms traditional approaches for predicting experimentally measured exometabolic flux that are reliant upon maximisation of the rate of biomass production.
+CONCLUSION: Due to its improved prediction of experimentally measured metabolic fluxes, and of its lack of a requirement for knowledge of the biomass composition of the organism under the conditions of interest, the approach is likely to be of rather general utility. The method has been shown to predict fluxes reliably in single cellular systems. Subsequent work will investigate the method's ability to generate condition- and tissue-specific flux predictions in multicellular organisms.},
+	language = {eng},
+	journal = {BMC Syst Biol},
+	author = {Lee, Dave and Smallbone, Kieran and Dunn, Warwick B. and Murabito, Ettore and Winder, Catherine L. and Kell, Douglas B. and Mendes, Pedro and Swainston, Neil},
+	month = jun,
+	year = {2012},
+	pmid = {22713172},
+	pmcid = {PMC3477026},
+	keywords = {Computational Biology, Genomics, Metabolome, Models, Biological, RNA, Messenger, Saccharomyces cerevisiae, Transcriptome},
+	pages = {73},
+	file = {Full Text:/Users/chengk6/Zotero/storage/2P2YXL32/Lee et al. - 2012 - Improving metabolic flux predictions using absolut.pdf:application/pdf}
+}
+
+@article{colijn_interpreting_2009,
+	title = {Interpreting expression data with metabolic flux models: predicting {Mycobacterium} tuberculosis mycolic acid production},
+	volume = {5},
+	issn = {1553-7358},
+	shorttitle = {Interpreting expression data with metabolic flux models},
+	doi = {10.1371/journal.pcbi.1000489},
+	abstract = {Metabolism is central to cell physiology, and metabolic disturbances play a role in numerous disease states. Despite its importance, the ability to study metabolism at a global scale using genomic technologies is limited. In principle, complete genome sequences describe the range of metabolic reactions that are possible for an organism, but cannot quantitatively describe the behaviour of these reactions. We present a novel method for modeling metabolic states using whole cell measurements of gene expression. Our method, which we call E-Flux (as a combination of flux and expression), extends the technique of Flux Balance Analysis by modeling maximum flux constraints as a function of measured gene expression. In contrast to previous methods for metabolically interpreting gene expression data, E-Flux utilizes a model of the underlying metabolic network to directly predict changes in metabolic flux capacity. We applied E-Flux to Mycobacterium tuberculosis, the bacterium that causes tuberculosis (TB). Key components of mycobacterial cell walls are mycolic acids which are targets for several first-line TB drugs. We used E-Flux to predict the impact of 75 different drugs, drug combinations, and nutrient conditions on mycolic acid biosynthesis capacity in M. tuberculosis, using a public compendium of over 400 expression arrays. We tested our method using a model of mycolic acid biosynthesis as well as on a genome-scale model of M. tuberculosis metabolism. Our method correctly predicts seven of the eight known fatty acid inhibitors in this compendium and makes accurate predictions regarding the specificity of these compounds for fatty acid biosynthesis. Our method also predicts a number of additional potential modulators of TB mycolic acid biosynthesis. E-Flux thus provides a promising new approach for algorithmically predicting metabolic state from gene expression data.},
+	language = {eng},
+	number = {8},
+	journal = {PLoS Comput Biol},
+	author = {Colijn, Caroline and Brandes, Aaron and Zucker, Jeremy and Lun, Desmond S. and Weiner, Brian and Farhat, Maha R. and Cheng, Tan-Yun and Moody, D. Branch and Murray, Megan and Galagan, James E.},
+	month = aug,
+	year = {2009},
+	pmid = {19714220},
+	pmcid = {PMC2726785},
+	keywords = {Algorithms, Cluster Analysis, Computational Biology, Fatty Acids, Gene Expression Profiling, Gene Expression Regulation, Gene Expression Regulation, Bacterial, Genome, Bacterial, Metabolic Networks and Pathways, Models, Biological, Models, Statistical, Mycobacterium tuberculosis, Mycolic Acids, Reproducibility of Results, Software},
+	pages = {e1000489},
+	file = {Full Text:/Users/chengk6/Zotero/storage/D9TXZRC9/Colijn et al. - 2009 - Interpreting expression data with metabolic flux m.pdf:application/pdf}
+}
+
+@article{song_prediction_2014,
+	title = {Prediction of metabolic flux distribution from gene expression data based on the flux minimization principle},
+	volume = {9},
+	issn = {1932-6203},
+	doi = {10.1371/journal.pone.0112524},
+	abstract = {Prediction of possible flux distributions in a metabolic network provides detailed phenotypic information that links metabolism to cellular physiology. To estimate metabolic steady-state fluxes, the most common approach is to solve a set of macroscopic mass balance equations subjected to stoichiometric constraints while attempting to optimize an assumed optimal objective function. This assumption is justifiable in specific cases but may be invalid when tested across different conditions, cell populations, or other organisms. With an aim to providing a more consistent and reliable prediction of flux distributions over a wide range of conditions, in this article we propose a framework that uses the flux minimization principle to predict active metabolic pathways from mRNA expression data. The proposed algorithm minimizes a weighted sum of flux magnitudes, while biomass production can be bounded to fit an ample range from very low to very high values according to the analyzed context. We have formulated the flux weights as a function of the corresponding enzyme reaction's gene expression value, enabling the creation of context-specific fluxes based on a generic metabolic network. In case studies of wild-type Saccharomyces cerevisiae, and wild-type and mutant Escherichia coli strains, our method achieved high prediction accuracy, as gauged by correlation coefficients and sums of squared error, with respect to the experimentally measured values. In contrast to other approaches, our method was able to provide quantitative predictions for both model organisms under a variety of conditions. Our approach requires no prior knowledge or assumption of a context-specific metabolic functionality and does not require trial-and-error parameter adjustments. Thus, our framework is of general applicability for modeling the transcription-dependent metabolism of bacteria and yeasts.},
+	language = {eng},
+	number = {11},
+	journal = {PLoS One},
+	author = {Song, Hyun-Seob and Reifman, Jaques and Wallqvist, Anders},
+	year = {2014},
+	pmid = {25397773},
+	pmcid = {PMC4232356},
+	keywords = {Algorithms, Escherichia coli, Gene Expression Profiling, Humans, Metabolic Flux Analysis, Metabolic Networks and Pathways, Models, Biological, RNA, Messenger, Saccharomyces cerevisiae},
+	pages = {e112524},
+	file = {Full Text:/Users/chengk6/Zotero/storage/GE3VN4AX/Song et al. - 2014 - Prediction of metabolic flux distribution from gen.pdf:application/pdf}
+}
+
+@article{jerby_computational_2010,
+	title = {Computational reconstruction of tissue-specific metabolic models: application to human liver metabolism},
+	volume = {6},
+	issn = {1744-4292},
+	shorttitle = {Computational reconstruction of tissue-specific metabolic models},
+	doi = {10.1038/msb.2010.56},
+	abstract = {The computational study of human metabolism has been advanced with the advent of the first generic (non-tissue specific) stoichiometric model of human metabolism. In this study, we present a new algorithm for rapid reconstruction of tissue-specific genome-scale models of human metabolism. The algorithm generates a tissue-specific model from the generic human model by integrating a variety of tissue-specific molecular data sources, including literature-based knowledge, transcriptomic, proteomic, metabolomic and phenotypic data. Applying the algorithm, we constructed the first genome-scale stoichiometric model of hepatic metabolism. The model is verified using standard cross-validation procedures, and through its ability to carry out hepatic metabolic functions. The model's flux predictions correlate with flux measurements across a variety of hormonal and dietary conditions, and improve upon the predictive performance obtained using the original, generic human model (prediction accuracy of 0.67 versus 0.46). Finally, the model better predicts biomarker changes in genetic metabolic disorders than the generic human model (accuracy of 0.67 versus 0.59). The approach presented can be used to construct other human tissue-specific models, and be applied to other organisms.},
+	language = {eng},
+	journal = {Mol Syst Biol},
+	author = {Jerby, Livnat and Shlomi, Tomer and Ruppin, Eytan},
+	month = sep,
+	year = {2010},
+	pmid = {20823844},
+	pmcid = {PMC2964116},
+	keywords = {Algorithms, Computational Biology, Humans, Liver, Models, Theoretical},
+	pages = {401},
+	file = {Full Text:/Users/chengk6/Zotero/storage/VJSQ4PU2/Jerby et al. - 2010 - Computational reconstruction of tissue-specific me.pdf:application/pdf}
+}
+
+@article{wang_reconstruction_2012,
+	title = {Reconstruction of genome-scale metabolic models for 126 human tissues using {mCADRE}},
+	volume = {6},
+	issn = {1752-0509},
+	doi = {10.1186/1752-0509-6-153},
+	abstract = {BACKGROUND: Human tissues perform diverse metabolic functions. Mapping out these tissue-specific functions in genome-scale models will advance our understanding of the metabolic basis of various physiological and pathological processes. The global knowledgebase of metabolic functions categorized for the human genome (Human Recon 1) coupled with abundant high-throughput data now makes possible the reconstruction of tissue-specific metabolic models. However, the number of available tissue-specific models remains incomplete compared with the large diversity of human tissues.
+RESULTS: We developed a method called metabolic Context-specificity Assessed by Deterministic Reaction Evaluation (mCADRE). mCADRE is able to infer a tissue-specific network based on gene expression data and metabolic network topology, along with evaluation of functional capabilities during model building. mCADRE produces models with similar or better functionality and achieves dramatic computational speed up over existing methods. Using our method, we reconstructed draft genome-scale metabolic models for 126 human tissue and cell types. Among these, there are models for 26 tumor tissues along with their normal counterparts, and 30 different brain tissues. We performed pathway-level analyses of this large collection of tissue-specific models and identified the eicosanoid metabolic pathway, especially reactions catalyzing the production of leukotrienes from arachidnoic acid, as potential drug targets that selectively affect tumor tissues.
+CONCLUSIONS: This large collection of 126 genome-scale draft metabolic models provides a useful resource for studying the metabolic basis for a variety of human diseases across many tissues. The functionality of the resulting models and the fast computational speed of the mCADRE algorithm make it a useful tool to build and update tissue-specific metabolic models.},
+	language = {eng},
+	journal = {BMC Syst Biol},
+	author = {Wang, Yuliang and Eddy, James A. and Price, Nathan D.},
+	month = dec,
+	year = {2012},
+	pmid = {23234303},
+	pmcid = {PMC3576361},
+	keywords = {Genomics, Humans, Metabolic Networks and Pathways, Models, Biological, Neoplasms, Organ Specificity, Time Factors, Transcriptome},
+	pages = {153},
+	file = {Full Text:/Users/chengk6/Zotero/storage/L3AV33XW/Wang et al. - 2012 - Reconstruction of genome-scale metabolic models fo.pdf:application/pdf}
+}
+
+@article{vlassis_fast_2014,
+	title = {Fast reconstruction of compact context-specific metabolic network models},
+	volume = {10},
+	issn = {1553-7358},
+	doi = {10.1371/journal.pcbi.1003424},
+	abstract = {Systemic approaches to the study of a biological cell or tissue rely increasingly on the use of context-specific metabolic network models. The reconstruction of such a model from high-throughput data can routinely involve large numbers of tests under different conditions and extensive parameter tuning, which calls for fast algorithms. We present fastcore, a generic algorithm for reconstructing context-specific metabolic network models from global genome-wide metabolic network models such as Recon X. fastcore takes as input a core set of reactions that are known to be active in the context of interest (e.g., cell or tissue), and it searches for a flux consistent subnetwork of the global network that contains all reactions from the core set and a minimal set of additional reactions. Our key observation is that a minimal consistent reconstruction can be defined via a set of sparse modes of the global network, and fastcore iteratively computes such a set via a series of linear programs. Experiments on liver data demonstrate speedups of several orders of magnitude, and significantly more compact reconstructions, over a rival method. Given its simplicity and its excellent performance, fastcore can form the backbone of many future metabolic network reconstruction algorithms.},
+	language = {eng},
+	number = {1},
+	journal = {PLoS Comput Biol},
+	author = {Vlassis, Nikos and Pacheco, Maria Pires and Sauter, Thomas},
+	month = jan,
+	year = {2014},
+	pmid = {24453953},
+	pmcid = {PMC3894152},
+	keywords = {Algorithms, Computational Biology, Computer Simulation, Genome, Humans, Linear Models, Metabolic Networks and Pathways, Software},
+	pages = {e1003424},
+	file = {Full Text:/Users/chengk6/Zotero/storage/CBIUHLX5/Vlassis et al. - 2014 - Fast reconstruction of compact context-specific me.pdf:application/pdf}
+}
+
+@article{shlomi_network-based_2008,
+	title = {Network-based prediction of human tissue-specific metabolism},
+	volume = {26},
+	issn = {1546-1696},
+	doi = {10.1038/nbt.1487},
+	abstract = {Direct in vivo investigation of mammalian metabolism is complicated by the distinct metabolic functions of different tissues. We present a computational method that successfully describes the tissue specificity of human metabolism on a large scale. By integrating tissue-specific gene- and protein-expression data with an existing comprehensive reconstruction of the global human metabolic network, we predict tissue-specific metabolic activity in ten human tissues. This reveals a central role for post-transcriptional regulation in shaping tissue-specific metabolic activity profiles. The predicted tissue specificity of genes responsible for metabolic diseases and tissue-specific differences in metabolite exchange with biofluids extend markedly beyond tissue-specific differences manifest in enzyme-expression data, and are validated by large-scale mining of tissue-specificity data. Our results establish a computational basis for the genome-wide study of normal and abnormal human metabolism in a tissue-specific manner.},
+	language = {eng},
+	number = {9},
+	journal = {Nat Biotechnol},
+	author = {Shlomi, Tomer and Cabili, Moran N. and Herrgård, Markus J. and Palsson, Bernhard Ø and Ruppin, Eytan},
+	month = sep,
+	year = {2008},
+	pmid = {18711341},
+	keywords = {Cell Physiological Phenomena, Computational Biology, Databases, Protein, Gene Expression Profiling, Gene Expression Regulation, Genome, Human, Humans, Metabolic Networks and Pathways, Models, Genetic, Models, Statistical, Reproducibility of Results, Software},
+	pages = {1003--1010}
+}
+
+@article{agren_reconstruction_2012,
+	title = {Reconstruction of genome-scale active metabolic networks for 69 human cell types and 16 cancer types using {INIT}},
+	volume = {8},
+	issn = {1553-7358},
+	doi = {10.1371/journal.pcbi.1002518},
+	abstract = {Development of high throughput analytical methods has given physicians the potential access to extensive and patient-specific data sets, such as gene sequences, gene expression profiles or metabolite footprints. This opens for a new approach in health care, which is both personalized and based on system-level analysis. Genome-scale metabolic networks provide a mechanistic description of the relationships between different genes, which is valuable for the analysis and interpretation of large experimental data-sets. Here we describe the generation of genome-scale active metabolic networks for 69 different cell types and 16 cancer types using the INIT (Integrative Network Inference for Tissues) algorithm. The INIT algorithm uses cell type specific information about protein abundances contained in the Human Proteome Atlas as the main source of evidence. The generated models constitute the first step towards establishing a Human Metabolic Atlas, which will be a comprehensive description (accessible online) of the metabolism of different human cell types, and will allow for tissue-level and organism-level simulations in order to achieve a better understanding of complex diseases. A comparative analysis between the active metabolic networks of cancer types and healthy cell types allowed for identification of cancer-specific metabolic features that constitute generic potential drug targets for cancer treatment.},
+	language = {eng},
+	number = {5},
+	journal = {PLoS Comput Biol},
+	author = {Agren, Rasmus and Bordel, Sergio and Mardinoglu, Adil and Pornputtapong, Natapol and Nookaew, Intawat and Nielsen, Jens},
+	year = {2012},
+	pmid = {22615553},
+	pmcid = {PMC3355067},
+	keywords = {Algorithms, Animals, Chromosome Mapping, Computer Simulation, Databases, Protein, Humans, Metabolome, Models, Biological, Neoplasms, Proteome, Signal Transduction},
+	pages = {e1002518},
+	file = {Full Text:/Users/chengk6/Zotero/storage/HTXPULZR/Agren et al. - 2012 - Reconstruction of genome-scale active metabolic ne.pdf:application/pdf}
+}
+
+@article{agren_identification_2014,
+	title = {Identification of anticancer drugs for hepatocellular carcinoma through personalized genome-scale metabolic modeling},
+	volume = {10},
+	issn = {1744-4292},
+	doi = {10.1002/msb.145122},
+	abstract = {Genome-scale metabolic models (GEMs) have proven useful as scaffolds for the integration of omics data for understanding the genotype-phenotype relationship in a mechanistic manner. Here, we evaluated the presence/absence of proteins encoded by 15,841 genes in 27 hepatocellular carcinoma (HCC) patients using immunohistochemistry. We used this information to reconstruct personalized GEMs for six HCC patients based on the proteomics data, HMR 2.0, and a task-driven model reconstruction algorithm (tINIT). The personalized GEMs were employed to identify anticancer drugs using the concept of antimetabolites; i.e., drugs that are structural analogs to metabolites. The toxicity of each antimetabolite was predicted by assessing the in silico functionality of 83 healthy cell type-specific GEMs, which were also reconstructed with the tINIT algorithm. We predicted 101 antimetabolites that could be effective in preventing tumor growth in all HCC patients, and 46 antimetabolites which were specific to individual patients. Twenty-two of the 101 predicted antimetabolites have already been used in different cancer treatment strategies, while the remaining antimetabolites represent new potential drugs. Finally, one of the identified targets was validated experimentally, and it was confirmed to attenuate growth of the HepG2 cell line.},
+	language = {eng},
+	journal = {Mol Syst Biol},
+	author = {Agren, Rasmus and Mardinoglu, Adil and Asplund, Anna and Kampf, Caroline and Uhlen, Mathias and Nielsen, Jens},
+	month = mar,
+	year = {2014},
+	pmid = {24646661},
+	pmcid = {PMC4017677},
+	keywords = {Antineoplastic Agents, Carcinoma, Hepatocellular, Computer Simulation, Drug Discovery, Genome, Human, Humans, Liver Neoplasms, Models, Biological, Precision Medicine, Proteomics},
+	pages = {721},
+	file = {Full Text:/Users/chengk6/Zotero/storage/LAU9B74Y/Agren et al. - 2014 - Identification of anticancer drugs for hepatocellu.pdf:application/pdf}
+}
+
+@article{yizhak_phenotype-based_2014,
+	title = {Phenotype-based cell-specific metabolic modeling reveals metabolic liabilities of cancer},
+	volume = {3},
+	issn = {2050-084X},
+	doi = {10.7554/eLife.03641},
+	abstract = {Utilizing molecular data to derive functional physiological models tailored for specific cancer cells can facilitate the use of individually tailored therapies. To this end we present an approach termed PRIME for generating cell-specific genome-scale metabolic models (GSMMs) based on molecular and phenotypic data. We build {\textgreater}280 models of normal and cancer cell-lines that successfully predict metabolic phenotypes in an individual manner. We utilize this set of cell-specific models to predict drug targets that selectively inhibit cancerous but not normal cell proliferation. The top predicted target, MLYCD, is experimentally validated and the metabolic effects of MLYCD depletion investigated. Furthermore, we tested cell-specific predicted responses to the inhibition of metabolic enzymes, and successfully inferred the prognosis of cancer patients based on their PRIME-derived individual GSMMs. These results lay a computational basis and a counterpart experimental proof of concept for future personalized metabolic modeling applications, enhancing the search for novel selective anticancer therapies.},
+	language = {eng},
+	journal = {Elife},
+	author = {Yizhak, Keren and Gaude, Edoardo and Le Dévédec, Sylvia and Waldman, Yedael Y. and Stein, Gideon Y. and van de Water, Bob and Frezza, Christian and Ruppin, Eytan},
+	month = nov,
+	year = {2014},
+	pmid = {25415239},
+	pmcid = {PMC4238051},
+	keywords = {Algorithms, Antineoplastic Agents, Biomarkers, Tumor, cancer, Carboxy-Lyases, cell biology, Cell Line, Tumor, Cell Proliferation, Citric Acid Cycle, Fatty Acids, Gene Knockdown Techniques, genome-scale metabolic modeling, Genome, Human, human, human biology, Humans, Lymphocytes, medicine, Models, Biological, Neoplasms, Oxidation-Reduction, personalized medicine, Phenotype, Precision Medicine, selective drug targets},
+	file = {Full Text:/Users/chengk6/Zotero/storage/JNUDG2JZ/Yizhak et al. - 2014 - Phenotype-based cell-specific metabolic modeling r.pdf:application/pdf}
+}
+
+@article{robaina_estevez_context-specific_2015,
+	title = {Context-{Specific} {Metabolic} {Model} {Extraction} {Based} on {Regularized} {Least} {Squares} {Optimization}},
+	volume = {10},
+	issn = {1932-6203},
+	doi = {10.1371/journal.pone.0131875},
+	abstract = {Genome-scale metabolic models have proven highly valuable in investigating cell physiology. Recent advances include the development of methods to extract context-specific models capable of describing metabolism under more specific scenarios (e.g., cell types). Yet, none of the existing computational approaches allows for a fully automated model extraction and determination of a flux distribution independent of user-defined parameters. Here we present RegrEx, a fully automated approach that relies solely on context-specific data and ℓ1-norm regularization to extract a context-specific model and to provide a flux distribution that maximizes its correlation to data. Moreover, the publically available implementation of RegrEx was used to extract 11 context-specific human models using publicly available RNAseq expression profiles, Recon1 and also Recon2, the most recent human metabolic model. The comparison of the performance of RegrEx and its contending alternatives demonstrates that the proposed method extracts models for which both the structure, i.e., reactions included, and the flux distributions are in concordance with the employed data. These findings are supported by validation and comparison of method performance on additional data not used in context-specific model extraction. Therefore, our study sets the ground for applications of other regularization techniques in large-scale metabolic modeling.},
+	language = {eng},
+	number = {7},
+	journal = {PLoS One},
+	author = {Robaina Estévez, Semidán and Nikoloski, Zoran},
+	year = {2015},
+	pmid = {26158726},
+	pmcid = {PMC4497637},
+	keywords = {Humans, Least-Squares Analysis, Metabolic Networks and Pathways, Models, Biological, Sequence Analysis, RNA, Transcriptome},
+	pages = {e0131875},
+	file = {Full Text:/Users/chengk6/Zotero/storage/W4AAEHFG/Robaina Estévez and Nikoloski - 2015 - Context-Specific Metabolic Model Extraction Based .pdf:application/pdf}
+}
+
+@article{opdam_systematic_2017,
+	title = {A {Systematic} {Evaluation} of {Methods} for {Tailoring} {Genome}-{Scale} {Metabolic} {Models}},
+	volume = {4},
+	issn = {2405-4712},
+	doi = {10.1016/j.cels.2017.01.010},
+	abstract = {Genome-scale models of metabolism can illuminate the molecular basis of cell phenotypes. Since some enzymes are only active in specific cell types, several algorithms use omics data to construct cell-line- and tissue-specific metabolic models from genome-scale models. However, these methods are often not rigorously benchmarked, and it is unclear how algorithm and parameter selection (e.g., gene expression thresholds, metabolic constraints) affects model content and predictive accuracy. To investigate this, we built hundreds of models of four different cancer cell lines using six algorithms, four gene expression thresholds, and three sets of metabolic constraints. Model content varied substantially across different parameter sets, but the algorithms generally increased accuracy in gene essentiality predictions. However, model extraction method choice had the largest impact on model accuracy. We further highlight how assumptions during model development influence model prediction accuracy. These insights will guide further development of context-specific models, thus more accurately resolving genotype-phenotype relationships.},
+	language = {eng},
+	number = {3},
+	journal = {Cell Syst},
+	author = {Opdam, Sjoerd and Richelle, Anne and Kellman, Benjamin and Li, Shanzhong and Zielinski, Daniel C. and Lewis, Nathan E.},
+	month = mar,
+	year = {2017},
+	pmid = {28215528},
+	pmcid = {PMC5526624},
+	keywords = {Algorithms, Animals, constraint-based modeling, Forecasting, Genome, genome-scale model, Genomics, Humans, metabolism, Metabolomics, model extraction method, Models, Biological, Models, Theoretical, systems biology, Systems Biology, tissue-specific},
+	pages = {318--329.e6},
+	file = {Full Text:/Users/chengk6/Zotero/storage/NYIYHYHE/Opdam et al. - 2017 - A Systematic Evaluation of Methods for Tailoring G.pdf:application/pdf}
+}
+
+@article{mendoza_systematic_2019,
+	title = {A systematic assessment of current genome-scale metabolic reconstruction tools},
+	volume = {20},
+	issn = {1474-760X},
+	url = {https://doi.org/10.1186/s13059-019-1769-1},
+	doi = {10.1186/s13059-019-1769-1},
+	abstract = {Several genome-scale metabolic reconstruction software platforms have been developed and are being continuously updated. These tools have been widely applied to reconstruct metabolic models for hundreds of microorganisms ranging from important human pathogens to species of industrial relevance. However, these platforms, as yet, have not been systematically evaluated with respect to software quality, best potential uses and intrinsic capacity to generate high-quality, genome-scale metabolic models. It is therefore unclear for potential users which tool best fits the purpose of their research.},
+	number = {1},
+	urldate = {2021-02-20},
+	journal = {Genome Biology},
+	author = {Mendoza, Sebastián N. and Olivier, Brett G. and Molenaar, Douwe and Teusink, Bas},
+	month = aug,
+	year = {2019},
+	keywords = {Bordetella pertussis, Genome-scale metabolic models, Genome-scale metabolic reconstruction, Lactobacillus plantarum, Pseudomonas putida, starred, Systematic evaluation},
+	pages = {158},
+	file = {Full Text PDF:/Users/chengk6/Zotero/storage/P95G77XW/Mendoza et al. - 2019 - A systematic assessment of current genome-scale me.pdf:application/pdf;Snapshot:/Users/chengk6/Zotero/storage/8B5MBZCE/s13059-019-1769-1.html:text/html}
+}
+
+@article{jamialahmadi_benchmark-driven_2019,
+	title = {A benchmark-driven approach to reconstruct metabolic networks for studying cancer metabolism},
+	volume = {15},
+	issn = {1553-7358},
+	url = {https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1006936},
+	doi = {10.1371/journal.pcbi.1006936},
+	abstract = {Genome-scale metabolic modeling has emerged as a promising way to study the metabolic alterations underlying cancer by identifying novel drug targets and biomarkers. To date, several computational methods have been developed to integrate high-throughput data with existing human metabolic reconstructions to generate context-specific cancer metabolic models. Despite a number of studies focusing on benchmarking the context-specific algorithms, no quantitative assessment has been made to compare the predictive performance of these methods. Here, we integrated various and different datasets used in previous works to design a quantitative platform to examine functional and consistency performance of several existing genome-scale cancer modeling approaches. Next, we used the results obtained here to develop a method for the reconstruction of context-specific metabolic models. We then compared the predictive power and consistency of networks generated by our method to other computational approaches investigated here. Our results showed a satisfactory performance of the developed method in most of the benchmarks. This benchmarking platform is of particular use in algorithm selection and assessing the performance of newly developed algorithms. More importantly, it can serve as guidelines for designing and developing new methods focusing on weaknesses and strengths of existing algorithms.},
+	language = {en},
+	number = {4},
+	urldate = {2021-02-20},
+	journal = {PLOS Computational Biology},
+	author = {Jamialahmadi, Oveis and Hashemi-Najafabadi, Sameereh and Motamedian, Ehsan and Romeo, Stefano and Bagheri, Fatemeh},
+	month = apr,
+	year = {2019},
+	note = {Publisher: Public Library of Science},
+	keywords = {Algorithms, Cancers and neoplasms, Cell metabolism, Drug metabolism, Gene expression, Hepatocellular carcinoma, Malignant tumors, starred, Tumor suppressor genes},
+	pages = {e1006936},
+	file = {Full Text PDF:/Users/chengk6/Zotero/storage/NFYC3UFZ/Jamialahmadi et al. - 2019 - A benchmark-driven approach to reconstruct metabol.pdf:application/pdf;Snapshot:/Users/chengk6/Zotero/storage/EGERZ5NX/article.html:text/html}
+}
+
+@article{pacheco_integrated_2015,
+	title = {Integrated metabolic modelling reveals cell-type specific epigenetic control points of the macrophage metabolic network},
+	volume = {16},
+	issn = {1471-2164},
+	doi = {10.1186/s12864-015-1984-4},
+	abstract = {BACKGROUND: The reconstruction of context-specific metabolic models from easily and reliably measurable features such as transcriptomics data will be increasingly important in research and medicine. Current reconstruction methods suffer from high computational effort and arbitrary threshold setting. Moreover, understanding the underlying epigenetic regulation might allow the identification of putative intervention points within metabolic networks. Genes under high regulatory load from multiple enhancers or super-enhancers are known key genes for disease and cell identity. However, their role in regulation of metabolism and their placement within the metabolic networks has not been studied.
+METHODS: Here we present FASTCORMICS, a fast and robust workflow for the creation of high-quality metabolic models from transcriptomics data. FASTCORMICS is devoid of arbitrary parameter settings and due to its low computational demand allows cross-validation assays. Applying FASTCORMICS, we have generated models for 63 primary human cell types from microarray data, revealing significant differences in their metabolic networks.
+RESULTS: To understand the cell type-specific regulation of the alternative metabolic pathways we built multiple models during differentiation of primary human monocytes to macrophages and performed ChIP-Seq experiments for histone H3 K27 acetylation (H3K27ac) to map the active enhancers in macrophages. Focusing on the metabolic genes under high regulatory load from multiple enhancers or super-enhancers, we found these genes to show the most cell type-restricted and abundant expression profiles within their respective pathways. Importantly, the high regulatory load genes are associated to reactions enriched for transport reactions and other pathway entry points, suggesting that they are critical regulatory control points for cell type-specific metabolism.
+CONCLUSIONS: By integrating metabolic modelling and epigenomic analysis we have identified high regulatory load as a common feature of metabolic genes at pathway entry points such as transporters within the macrophage metabolic network. Analysis of these control points through further integration of metabolic and gene regulatory networks in various contexts could be beneficial in multiple fields from identification of disease intervention strategies to cellular reprogramming.},
+	language = {eng},
+	journal = {BMC Genomics},
+	author = {Pacheco, Maria Pires and John, Elisabeth and Kaoma, Tony and Heinäniemi, Merja and Nicot, Nathalie and Vallar, Laurent and Bueb, Jean-Luc and Sinkkonen, Lasse and Sauter, Thomas},
+	month = oct,
+	year = {2015},
+	pmid = {26480823},
+	pmcid = {PMC4617894},
+	keywords = {Cell Lineage, Epigenesis, Genetic, Humans, Macrophages, Metabolic Networks and Pathways, Models, Genetic, Software, Transcriptome},
+	pages = {809},
+	file = {Full Text:/Users/chengk6/Zotero/storage/TSXXK2BE/Pacheco et al. - 2015 - Integrated metabolic modelling reveals cell-type s.pdf:application/pdf}
+}
+
+@article{schultz_reconstruction_2016,
+	title = {Reconstruction of {Tissue}-{Specific} {Metabolic} {Networks} {Using} {CORDA}},
+	volume = {12},
+	issn = {1553-7358},
+	doi = {10.1371/journal.pcbi.1004808},
+	abstract = {Human metabolism involves thousands of reactions and metabolites. To interpret this complexity, computational modeling becomes an essential experimental tool. One of the most popular techniques to study human metabolism as a whole is genome scale modeling. A key challenge to applying genome scale modeling is identifying critical metabolic reactions across diverse human tissues. Here we introduce a novel algorithm called Cost Optimization Reaction Dependency Assessment (CORDA) to build genome scale models in a tissue-specific manner. CORDA performs more efficiently computationally, shows better agreement to experimental data, and displays better model functionality and capacity when compared to previous algorithms. CORDA also returns reaction associations that can greatly assist in any manual curation to be performed following the automated reconstruction process. Using CORDA, we developed a library of 76 healthy and 20 cancer tissue-specific reconstructions. These reconstructions identified which metabolic pathways are shared across diverse human tissues. Moreover, we identified changes in reactions and pathways that are differentially included and present different capacity profiles in cancer compared to healthy tissues, including up-regulation of folate metabolism, the down-regulation of thiamine metabolism, and tight regulation of oxidative phosphorylation.},
+	language = {eng},
+	number = {3},
+	journal = {PLoS Comput Biol},
+	author = {Schultz, André and Qutub, Amina A.},
+	month = mar,
+	year = {2016},
+	pmid = {26942765},
+	pmcid = {PMC4778931},
+	keywords = {Algorithms, Computer Simulation, Humans, Metabolome, Metabolomics, Models, Biological, Neoplasm Proteins, Neoplasms, Organ Specificity, Proteome, Signal Transduction},
+	pages = {e1004808},
+	file = {Full Text:/Users/chengk6/Zotero/storage/3RQ93LK3/Schultz and Qutub - 2016 - Reconstruction of Tissue-Specific Metabolic Networ.pdf:application/pdf}
+}
+
+@article{motamedian_trfba_2017,
+	title = {{TRFBA}: an algorithm to integrate genome-scale metabolic and transcriptional regulatory networks with incorporation of expression data},
+	volume = {33},
+	issn = {1367-4811},
+	shorttitle = {{TRFBA}},
+	doi = {10.1093/bioinformatics/btw772},
+	abstract = {Motivation: Integration of different biological networks and data-types has been a major challenge in systems biology. The present study introduces the transcriptional regulated flux balance analysis (TRFBA) algorithm that integrates transcriptional regulatory and metabolic models using a set of expression data for various perturbations.
+Results: TRFBA considers the expression levels of genes as a new continuous variable and introduces two new linear constraints. The first constraint limits the rate of reaction(s) supported by a metabolic gene using a constant parameter (C) that converts the expression levels to the upper bounds of the reactions. Considering the concept of constraint-based modeling, the second set of constraints correlates the expression level of each target gene with that of its regulating genes. A set of constraints and binary variables was also added to prevent the second set of constraints from overlapping. TRFBA was implemented on Escherichia coli and Saccharomyces cerevisiae models to estimate growth rates under various environmental and genetic perturbations. The error sensitivity to the algorithm parameter was evaluated to find the best value of C. The results indicate a significant improvement in the quantitative prediction of growth in comparison with previously presented algorithms. The robustness of the algorithm to change in the expression data and the regulatory network was tested to evaluate the effect of noisy and incomplete data. Furthermore, the use of added constraints for perturbations without their gene expression profile demonstrates that these constraints can be applied to improve the growth prediction of FBA.
+Availability and Implementation: TRFBA is implemented in Matlab software and requires COBRA toolbox. Source code is freely available at http://sbme.modares.ac.ir .
+Contact: : motamedian@modares.ac.ir.
+Supplementary information: Supplementary data are available at Bioinformatics online.},
+	language = {eng},
+	number = {7},
+	journal = {Bioinformatics},
+	author = {Motamedian, Ehsan and Mohammadi, Maryam and Shojaosadati, Seyed Abbas and Heydari, Mona},
+	month = apr,
+	year = {2017},
+	pmid = {28065897},
+	keywords = {Algorithms, Escherichia coli, Gene Expression Profiling, Gene Expression Regulation, Gene Regulatory Networks, Genome, Metabolic Networks and Pathways, Models, Biological, Saccharomyces cerevisiae, Software, Transcription, Genetic},
+	pages = {1057--1063},
+	file = {Full Text:/Users/chengk6/Zotero/storage/UEX4XDBR/Motamedian et al. - 2017 - TRFBA an algorithm to integrate genome-scale meta.pdf:application/pdf}
+}
+
+@article{lieven_memote_2020,
+	title = {{MEMOTE} for standardized genome-scale metabolic model testing},
+	volume = {38},
+	issn = {1087-0156},
+	url = {https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7082222/},
+	doi = {10.1038/s41587-020-0446-y},
+	number = {3},
+	urldate = {2021-02-20},
+	journal = {Nat Biotechnol},
+	author = {Lieven, Christian and Beber, Moritz E. and Olivier, Brett G. and Bergmann, Frank T. and Ataman, Meric and Babaei, Parizad and Bartell, Jennifer A. and Blank, Lars M. and Chauhan, Siddharth and Correia, Kevin and Diener, Christian and Dräger, Andreas and Ebert, Birgitta E. and Edirisinghe, Janaka N. and Faria, José P. and Feist, Adam M. and Fengos, Georgios and Fleming, Ronan M. T. and García-Jiménez, Beatriz and Hatzimanikatis, Vassily and van Helvoirt, Wout and Henry, Christopher S. and Hermjakob, Henning and Herrgård, Markus J. and Kaafarani, Ali and Kim, Hyun Uk and King, Zachary and Klamt, Steffen and Klipp, Edda and Koehorst, Jasper J. and König, Matthias and Lakshmanan, Meiyappan and Lee, Dong-Yup and Lee, Sang Yup and Lee, Sunjae and Lewis, Nathan E. and Liu, Filipe and Ma, Hongwu and Machado, Daniel and Mahadevan, Radhakrishnan and Maia, Paulo and Mardinoglu, Adil and Medlock, Gregory L. and Monk, Jonathan M. and Nielsen, Jens and Nielsen, Lars Keld and Nogales, Juan and Nookaew, Intawat and Palsson, Bernhard O. and Papin, Jason A. and Patil, Kiran R. and Poolman, Mark and Price, Nathan D. and Resendis-Antonio, Osbaldo and Richelle, Anne and Rocha, Isabel and Sánchez, Benjamín J. and Schaap, Peter J. and Malik Sheriff, Rahuman S. and Shoaie, Saeed and Sonnenschein, Nikolaus and Teusink, Bas and Vilaça, Paulo and Vik, Jon Olav and Wodke, Judith A. H. and Xavier, Joana C. and Yuan, Qianqian and Zakhartsev, Maksim and Zhang, Cheng},
+	year = {2020},
+	pmid = {32123384},
+	pmcid = {PMC7082222},
+	pages = {272--276},
+	file = {PubMed Central Full Text PDF:/Users/chengk6/Zotero/storage/W59A5CKQ/Lieven et al. - 2020 - MEMOTE for standardized genome-scale metabolic mod.pdf:application/pdf}
+}
+
+@article{zhang_rmetd2_2019,
+	title = {{RMetD2}: a tool for integration of relative transcriptomics data into {Genome}-scale metabolic models},
+	copyright = {© 2019, Posted by Cold Spring Harbor Laboratory. This pre-print is available under a Creative Commons License (Attribution 4.0 International), CC BY 4.0, as described at http://creativecommons.org/licenses/by/4.0/},
+	shorttitle = {{RMetD2}},
+	url = {https://www.biorxiv.org/content/10.1101/663096v1},
+	doi = {10.1101/663096},
+	abstract = {{\textless}h3{\textgreater}Abstract{\textless}/h3{\textgreater} {\textless}p{\textgreater}Relative Metabolic Differences version 2 (RMetD2) is a tool for integration of differentially expressed (DE) genes into genome-scale metabolic models (GEMs) for revealing the altered metabolism between two biological conditions. This method provides a robust evaluation of the metabolism by using flux ranges instead of a single set of flux distributions. RMetD2 classifies reactions into three different groups, namely up-regulated, down-regulated and unchanged, which enables systematic interpretation of the metabolic differences between two different conditions. We employed this method in three different case studies using mice and human datasets, and compared it with state-of-the-art methods used for studying condition-specific metabolic differences using GEMs. We observed that RMetD2 is capable of capturing experimentally-observed features that are missed by other methods, highlighting its potential use in biotechnology and systems medicine applications. RMetD2 is implemented in Matlab and it is available without any limitation at https://sourceforge.net/projects/rmetd.{\textless}/p{\textgreater}},
+	language = {en},
+	urldate = {2021-02-20},
+	journal = {bioRxiv},
+	author = {Zhang, Cheng and Lee, Sunjae and Bidkhori, Gholamreza and Benfeitas, Rui and Lovric, Alen and Chen, Shuqi and Uhlen, Mathias and Nielsen, Jens and Mardinoglu, Adil},
+	month = jun,
+	year = {2019},
+	note = {Publisher: Cold Spring Harbor Laboratory
+Section: New Results},
+	pages = {663096},
+	file = {Full Text PDF:/Users/chengk6/Zotero/storage/DRVVKHEY/Zhang et al. - 2019 - RMetD2 a tool for integration of relative transcr.pdf:application/pdf;Snapshot:/Users/chengk6/Zotero/storage/5X32H2ZL/663096v1.html:text/html}
+}
+
+@article{segre_analysis_2002,
+	title = {Analysis of optimality in natural and perturbed metabolic networks},
+	volume = {99},
+	copyright = {Copyright © 2002, The National Academy of Sciences},
+	issn = {0027-8424, 1091-6490},
+	url = {https://www.pnas.org/content/99/23/15112},
+	doi = {10.1073/pnas.232349399},
+	abstract = {An important goal of whole-cell computational modeling is to integrate detailed biochemical information with biological intuition to produce testable predictions. Based on the premise that prokaryotes such as Escherichia coli have maximized their growth performance along evolution, flux balance analysis (FBA) predicts metabolic flux distributions at steady state by using linear programming. Corroborating earlier results, we show that recent intracellular flux data for wild-type E. coli JM101 display excellent agreement with FBA predictions. Although the assumption of optimality for a wild-type bacterium is justifiable, the same argument may not be valid for genetically engineered knockouts or other bacterial strains that were not exposed to long-term evolutionary pressure. We address this point by introducing the method of minimization of metabolic adjustment (MOMA), whereby we test the hypothesis that knockout metabolic fluxes undergo a minimal redistribution with respect to the flux configuration of the wild type. MOMA employs quadratic programming to identify a point in flux space, which is closest to the wild-type point, compatibly with the gene deletion constraint. Comparing MOMA and FBA predictions to experimental flux data for E. coli pyruvate kinase mutant PB25, we find that MOMA displays a significantly higher correlation than FBA. Our method is further supported by experimental data for E. coli knockout growth rates. It can therefore be used for predicting the behavior of perturbed metabolic networks, whose growth performance is in general suboptimal. MOMA and its possible future extensions may be useful in understanding the evolutionary optimization of metabolism.},
+	language = {en},
+	number = {23},
+	urldate = {2021-02-20},
+	journal = {PNAS},
+	author = {Segrè, Daniel and Vitkup, Dennis and Church, George M.},
+	month = nov,
+	year = {2002},
+	pmid = {12415116},
+	note = {Publisher: National Academy of Sciences
+Section: Biological Sciences},
+	pages = {15112--15117},
+	file = {Full Text PDF:/Users/chengk6/Zotero/storage/L8B2J6J7/Segrè et al. - 2002 - Analysis of optimality in natural and perturbed me.pdf:application/pdf;Snapshot:/Users/chengk6/Zotero/storage/RNAPTQ5B/15112.html:text/html}
+}
+
+@article{yizhak_model-based_2013,
+	title = {Model-based identification of drug targets that revert disrupted metabolism and its application to ageing},
+	volume = {4},
+	issn = {2041-1723},
+	doi = {10.1038/ncomms3632},
+	abstract = {The growing availability of 'omics' data and high-quality in silico genome-scale metabolic models (GSMMs) provide a golden opportunity for the systematic identification of new metabolic drug targets. Extant GSMM-based methods aim at identifying drug targets that would kill the target cell, focusing on antibiotics or cancer treatments. However, normal human metabolism is altered in many diseases and the therapeutic goal is fundamentally different--to retrieve the healthy state. Here we present a generic metabolic transformation algorithm (MTA) addressing this issue. First, the prediction accuracy of MTA is comprehensively validated using data sets of known perturbations. Second, two predicted yeast lifespan-extending genes, GRE3 and ADH2, are experimentally validated, together with their associated hormetic effect. Third, we show that MTA predicts new drug targets for human ageing that are enriched with orthologs of known lifespan-extending genes and with genes downregulated following caloric restriction mimetic treatments. MTA offers a promising new approach for the identification of drug targets in metabolically related disorders.},
+	language = {eng},
+	journal = {Nat Commun},
+	author = {Yizhak, Keren and Gabay, Orshay and Cohen, Haim and Ruppin, Eytan},
+	year = {2013},
+	pmid = {24153335},
+	keywords = {Aging, Alcohol Dehydrogenase, Alcohol Oxidoreductases, Algorithms, Caloric Restriction, Computer Simulation, Eicosanoids, Gene Expression Regulation, Fungal, Genome, Fungal, Genome, Human, Hormesis, Humans, Longevity, Metabolic Networks and Pathways, Models, Biological, Molecular Targeted Therapy, Reactive Oxygen Species, Resveratrol, Saccharomyces cerevisiae, Saccharomyces cerevisiae Proteins, Sirolimus, Stilbenes},
+	pages = {2632},
+	file = {Full Text:/Users/chengk6/Zotero/storage/KTNHMTEA/Yizhak et al. - 2013 - Model-based identification of drug targets that re.pdf:application/pdf}
+}
