@@ -18,6 +18,7 @@ ACT & Adoptive Cell Transfer \\
 ACHR & Artificial Centering Hit-and-Run \\
 ALL & Acute Lymphoblastic Leukemia \\
 ATP & Adenosine Triphosphate \\
+AUROC & Area Under Receiver Operating Characteristic Curve \\
 BALF & Bronchoalveolar Lavage Fluid \\
 CAR-T & Chimeric Antigen Receptor-T Cell \\
 CBM & Constraint-Based Model (or Method/Modeling) \\
@@ -44,7 +45,7 @@ ICB & Immune Checkpoint Blockade \\
 ICU & Intensive Care Unit \\
 IFN & Interferon \\
 IL & Interleukin \\
-IMP & Inosine 5-Monophosphate \\
+IMP & Inosine 5''-Monophosphate \\
 iMAT & Integrative Metabolic Analysis Tool \\
 KD & Knockdown \\
 KO & Knockout \\
@@ -58,6 +59,7 @@ MIQP & Mixed Integer Quadratic Programming \\
 MOMA & Minimization of Metabolic Adjustment \\
 MS & Mass Spectrometry \\
 MTA & Metabolic Transformation Algorithm \\
+NAC & N-Acetylcysteine \\
 NAD\textsuperscript{+}/NADH & Nicotinamide Adenine Dinucleotide \\
 NADP\textsuperscript{+}/NADPH & Nicotinamide Adenine Dinucleotide Phosphate \\
 NIH & National Institutes of Health \\
@@ -65,6 +67,7 @@ NK & Natural Killer \\
 NLP & Non-Linear Programming \\
 ORF & Open Reading Frame \\
 OXPHOS & Oxidative Phosphorylation \\
+PCA & Principle Component Analysis \\
 PPI & Protein-Protein Interaction \\
 PPP & Pentose Phosphate Pathway \\
 PRPP & Phosphoribosyl Pyrophosphate \\
@@ -73,6 +76,7 @@ RBD & Receptor Binding Domain \\
 RBM & Receptor Binding Motif \\
 RdRP & RNA-Dependent RNA Polymerase \\
 RNA-seq & RNA-Sequencing \\
+ROC & Receiver Operating Characteristic \\
 ROS & Reactive Oxygen Species \\
 RTC & Replication and Transcription Complex \\
 rMTA & Robust Metabolic Transformation Algorithm \\
@@ -87,7 +91,7 @@ TIL & Tumor-Infiltrating Lymphocytes \\
 TMB & Tumor Mutational Burden \\
 TME & Tumor Microenvironment \\
 TRS & Transcription Regulatory Sequences \\
-UMP & Uridine 5-Monophosphate \\
+UMP & Uridine 5''-Monophosphate \\
 WHO & World Health Organization \\
 WT & Wild-Type \\
 \end{longtable}

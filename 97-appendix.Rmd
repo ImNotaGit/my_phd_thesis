@@ -6,19 +6,60 @@
 
 # Appendices {-}
 
-<!--
-If you feel it necessary to include an appendix, it goes here, otherwise remove this file.
--->
+## Chapter \@ref(mta) {-}
 
-This first appendix includes all of the R chunks of code that were hidden throughout the document (using the `include = FALSE` chunk tag) to help with readibility and/or setup.
+## Chapter \@ref(ucp2) {-}
 
-**In the main Rmd file**
+## Chapter \@ref(covid) {-}
 
-```{r ref.label='include_packages', results='hide', echo = TRUE}
+```{r covid-gsea-mat, out.width="80%", fig.cap="Pairwise comparison of the datasets by their top significantly enriched pathways with Fisher's exact tests."}
+knitr::include_graphics(path="figure/covid/gsea.enr.mat.svg.png")
 ```
 
-**In Chapter \@ref(covid):**
-
-```{r ref.label='include_packages_2', results='hide', echo = TRUE}
+```{r covid-gsea-metab, out.width="100%", fig.cap="Summary of the metabolic pathway changes from GSEA analysis across the analyzed datasets."}
+knitr::include_graphics(path="figure/covid/metab.pathways.svg.png")
 ```
 
+```{r covid-df-pos-mat, out.width="80%", fig.cap="Pairwise comparison of the datasets by their top positive DF reactions with Fisher's exact tests."}
+knitr::include_graphics(path="figure/covid/df.mat.pos.svg.png")
+```
+
+```{r covid-df-neg-mat, out.width="80%", fig.cap="Pairwise comparison of the datasets by their top negative DF reactions with Fisher's exact tests."}
+knitr::include_graphics(path="figure/covid/df.mat.neg.svg.png")
+```
+
+```{r covid-flux-tca1, out.width="80%", fig.cap="Visualization of the consistent flux changes in the TCA cycle."}
+knitr::include_graphics(path="figure/covid/tca1.png")
+```
+
+```{r covid-flux-tca2, out.width="80%", fig.cap="Visualization of the consistent flux changes in the reactions involving the cytosolic counterparts of TCA cycle metabolites."}
+knitr::include_graphics(path="figure/covid/tca2.png")
+```
+
+```{r covid-flux-inositol, out.width="80%", fig.cap="Visualization of the consistent flux changes in the inositol phosphate metabolism pathway."}
+knitr::include_graphics(path="figure/covid/ip.png")
+```
+
+```{r covid-flux-glycine, out.width="80%", fig.cap="Visualization of the consistent flux changes in the glycine, serine, and threonine metabolism pathway."}
+knitr::include_graphics(path="figure/covid/glyser.png")
+```
+
+```{r covid-mta-ppi-enr, out.width="100%", fig.cap="Summary of the enrichment of top MTA predictions from each dataset in the host-virus PPI proteins."}
+knitr::include_graphics(path="figure/covid/mta.ppi.enr.svg.png")
+```
+
+```{r covid-mta-roc-calu3, out.width="80%", fig.cap="An example ROC curve for the Calu-3 dataset."}
+knitr::include_graphics(path="figure/covid/auc.calu.svg.png")
+```
+
+```{r covid-mta-roc-liao, out.width="80%", fig.cap="An example ROC curve for the Liao et al. single-cell dataset."}
+knitr::include_graphics(path="figure/covid/auc.liao.svg.png")
+```
+
+```{r covid-rem-expr-pathway, out.width="100%", fig.cap="Summary of the significant pathways with differentially expressed genes between the virus+remdesivir and the control Vero E6 cells"}
+knitr::include_graphics(path="figure/covid/enr.c2vd.expr.svg.png")
+```
+
+```{r covid-rem-flux-pca, out.width="80%", fig.cap="PCA plot on the iMAT-computed metabolic fluxes from control Vero E6 cells as well as SARS-CoV-2-infected cells with or without remdesivir treatment"}
+knitr::include_graphics(path="figure/covid/rem.pca.flux.svg.png")
+```
