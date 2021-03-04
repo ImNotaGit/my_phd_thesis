@@ -2,6 +2,8 @@
 library(my.utils)
 library(gembox)
 library(ComplexHeatmap)
+library(circlize)
+library(fgsea)
 ```
 
 
@@ -9,33 +11,273 @@ library(ComplexHeatmap)
 
 ## Introduction
 
-Various cancer immunotherapies, notably immune checkpoint blockade (ICB) and adoptive cell transfer (ACT) therapies have revolutionized the landscape of cancer therapeutics, achieving unprecedented durable response. However, various challenges still remain, including the increasing the currently suboptimal response rate in ICB therapy and enhancing the long-term persistence of transfused T cells in ACT therapies (Sections \@ref(intro-icb) and \@ref(intro-act)). T cells can play a pivotal role in anti-cancer immunity, and their functional state is an important determinant of response to current cancer immunotherapies. It is therefore desirable to further elucidate the factors regulating T cell function in order to improve the success of the immunotherapies. It has been established that metabolism can greatly affect different aspects of T cell function, including cytolytic activity, differentiation, longevity and exhaustion (Section \@ref(intro-t-metab)), with mitochondrial metabolism lying at the center of T cell metabolic regulation [@desdin-mico_mitochondrial_2018]. Modulating T cell mitochondrial metabolism has further been proposed to represent a promising strategy to boost immunotherapy response [@li_rewiring_2020]. Here I aim to take advantage of the framework of genome-scale metabolic modeling (GEM) integrated with publicly available T cell transcriptomic data in cancer immunotherapy to understand the global metabolic features associated with T cell function and immunotherapy response. I specifically applied the metabolic transformation algorithm (MTA; Section \@ref(intro-gem-algo) and Chapter \@ref(mta)) on various ACT datasets to predict metabolic processes that are essential for T cell function in the ACT setting. Combining with the analysis of additional ICB datasets and the cancer patient data from the TCGA project, I identified mitochondrial uncoupling and specifically the UCP2 protein as important for therapy response. Via collaboration with experimentalists, the role and mechanisms of UCP2 in regulating T cell function and immunotherapy response was further comprehensively investigated in the mice B16 melanoma model. The extensive biological experiments confirmed that UCP2 is required for T cell stemness and affects its anti-tumor function in mice, and also further elucidated an ROS and mTOR signaling-related mechanisms, echoing previous studies that established the important roles of ROS and mTOR [@klein_geltink_unraveling_2018; @powell_regulation_2012; Section \@ref(intro-t-metab)].
+Various cancer immunotherapies, notably ICB and ACT therapies have revolutionized the landscape of cancer therapeutics, achieving unprecedented durable response. However, various challenges still remain, including the increasing the currently suboptimal response rate in ICB therapy and enhancing the long-term persistence of transfused T cells in ACT therapies (Sections \@ref(intro-icb) and \@ref(intro-act)). T cells can play a pivotal role in anti-cancer immunity, and their functional state is an important determinant of response to current cancer immunotherapies. It is therefore desirable to further elucidate the factors regulating T cell function in order to improve the success of the immunotherapies. It has been established that metabolism can greatly affect different aspects of T cell function, including cytolytic activity, differentiation, longevity and exhaustion (Section \@ref(intro-t-metab)), with mitochondrial metabolism lying at the center of T cell metabolic regulation [@desdin-mico_mitochondrial_2018]. Modulating T cell mitochondrial metabolism has further been proposed to represent a promising strategy to boost immunotherapy response [@li_rewiring_2020]. Here I aim to take advantage of the framework of GEM integrated with publicly available T cell transcriptomic data in cancer immunotherapy to understand the global metabolic features associated with T cell function and immunotherapy response. I specifically applied the MTA algorithm developed from previous algorithms [@yizhak_model-based_2013; @valcarcel_rmta_2019] described in Chapter \@ref(mta) on various ACT datasets to predict metabolic processes that are essential for T cell function in the ACT setting. Combining with the analysis of additional ICB datasets and the cancer patient data from the TCGA project, I identified mitochondrial uncoupling and specifically the UCP2 protein as important for therapy response. Via collaboration with experimentalists, the role and mechanisms of UCP2 in regulating T cell function and immunotherapy response was further comprehensively investigated in the mice B16 melanoma model. The extensive biological experiments confirmed that UCP2 is required for T cell stemness and affects its anti-tumor function in mice, and also further elucidated an ROS and mTOR signaling-related mechanisms, echoing previous studies that established the important roles of ROS and mTOR [@klein_geltink_unraveling_2018; @powell_regulation_2012; Section \@ref(intro-t-metab)].
 
 ## Results
 
-### GEM-based analysis of T cell metabolism in cancer immunotherapy
+### Identification of the metabolic fluxes in CD8 T cells associated with cancer immunotherapy response
 
-df analysis
+Numerous studies have performed transcriptomic profiling of patient samples in the context of cancer immunotherapy in order to identify the determinants of response. Aiming to specifically investigate the CD8 T cell metabolic profiles in immunotherapy, I mainly focused on ACT datasets where the T cells to be infused into the patients were specifically profiled instead of the bulk tumor, and applied GEM to compute the metabolic fluxes from the gene-level data. Specifically, I start by analyzing two published gene expression datasets: one dataset of CAR-T cells for anti-CD19 CAR-T therapy in CLL [@fraietta_determinants_2018], and the other of KRAS(G12D)-targeting TILs for ACT in a metastatic colorectal cancer patient [@lu_single-cell_2019]. For [@fraietta_determinants_2018], I applied the GEM algorithm iMAT [@shlomi_network-based_2008] with ACHR random sampling to compute the metabolic flux distributions in the CAR-T cells of the responders and non-responders to therapy, respectively, and performed differential flux analysis of the responders compared to the non-responders. In [@lu_single-cell_2019], the authors identified a T cell clone that persisted for up to 266 days after infusion, which they called "9.2-P", and another clone targeting the same KRAS(G12D) epitope but did not persist for longer than 40 days, which is called "9.1-NP". I similarly used iMAT to compute the flux distributions of these two T cell clones, and compared the fluxes in the persistent clone compared to the non-persistent clone. Metabolic pathways enriched by these two comparisons are highly similar, suggesting common metabolic processes associated with T cell persistence and response. These common pathways are summarized in Figure \@ref(fig:ucp2-act-df-pathway). Specifically examining the fluxes corresponding to ETC/OXPHOS function, which are known to be positively associated with T cell memory, stemness and persistence [@sukumar_inhibiting_2013], It can be seen that the iMAT-computed fluxes are overall higher (esp. for the ATP synthase reaction) in responders compared to non-responders (Figure \@ref(fig:ucp2-cart-df-oxphos)) as well as in the persistent clones vs the non-persistent clones (Appendix Figure \@ref(fig:ucp2-lu-df-oxphos)).
+
+```{r ucp2-act-df-pathway, fig.cap="Metabolic pathway enrichment of reactions with consistent differential fluxes in the CAR-T cells of responders vs non-responders and in the persistent vs non-persistent T cell clones.", fig.width=6, fig.height=3.5}
+cart <- new.env()
+load("data/ucp2/Fraietta/dflux.res.RData", envir=cart)
+lu <- new.env()
+load("data/ucp2/Lu/dflux.res.RData", envir=lu)
+x <- union(intersect(cart$df.gsea.res[padj<0.1 & ES>0, pathway], lu$df.gsea.res[padj<0.1 & ES>0, pathway]),
+           intersect(cart$df.gsea.res[padj<0.1 & ES<0, pathway], lu$df.gsea.res[padj<0.1 & ES<0, pathway]))
+tmp <- cart$df.gsea.res[pathway %in% x][order(NES)][, nlp:=-log10(padj)][, pathway:=factor(pathway, levels=pathway)]
+
+ggplot(tmp, aes(x=pathway, y=NES)) +
+  geom_point(aes(color=nlp, size=size)) +
+  scale_color_continuous(name=latex2exp::TeX("-log_{10}P_{adj}"), low="grey", high="red3") +
+  theme_classic() +
+  thm(x.tit=NULL, x.txt=list(angle=35, hjust=1), plt.margin=c(10,0,0,90))
+```
+
+```{r ucp2-cart-df-oxphos, fig.cap="Computed metabolic flux distributions of the ETC/OXPHOS reactions in the T cells of anti-CD19 CAR-T therapy responders vs non-responders.", fig.width=6, fig.height=2}
+imat.res <- readRDS("data/ucp2/Fraietta/imat.res.RDS")
+plot.fluxes2(imat.res$nr$result.model, imat.res$r$result.model, group.names=c("non-responder","responder"),
+             rxns=list(`Complext 1`="NADH2_DASH_u10m", `Complext 3`="CYOR_DASH_u10m", `Complext 4`="CYOOm3", `ATP Synthase`="ATPS4m"),
+             ylims=list(c(40,60), c(60,80), c(25,45), c(150,170)))
+```
 
 ### MTA identified T cell mitochondrial uncoupling as essential for the anti-cancer function and immunotherapy response
 
-To identify novel candidate metabolic regulators that are important for the T cell anti-tumor function, we start with a computational approach using genome-scale metabolic modeling (GEM). Specifically, we applied the metabolic transformation algorithm (MTA) (Yizhak et al., 2013) on a published gene expression dataset of CAR-T cells for anti-CD19 CAR-T therapy in chronic lymphocytic leukemia (CLL) (Fraietta et al., 2018), and predicted metabolic reactions whose knockout (KO) can transform the responder-associated T cell metabolic state to that of the non-responders. Briefly, MTA computes sample-specific metabolic profile as the rates (i.e. fluxes) of all cellular metabolic reactions based on the gene expression, then simulates the KO of each reaction with GEM under the T cell metabolic background of the responders; as outputs, MTA ranks all metabolic reaction KO’s by their capacity in leading to a closer metabolic state to that of the non-responders (illustrated in Figure 1A; Methods). Therefore, top MTA-predicted metabolic reactions represent candidates that are essential for potent T cell anti-tumor function, since their KO’s are predicted to result in non-responsiveness in CAR-T therapy. We performed pathway enrichment analysis of the top 10% of MTA-predicted reactions (Figure 1B), and found that MTA was able to successfully recover known metabolic pathways that regulate T cell function, for example those related to nucleotide and amino acid metabolism (ref), and in particular oxidative phosphorylation (OXPHOS) (ref). OXPHOS has been shown to … (ref). Consistently we found that the electron transfer chain (ETC) and ATP synthase fluxes are overall higher in the CAR-T cells from the responders vs that in the non-responders, as computed via GEM using the same anti-CD19 CAR-T dataset (Figure 1C; Methods). Using another dataset on KRAS(G12D)-targeting tumor-infiltrating lymphocytes (TILs) for adoptive cell transfer therapy (ACT) in a metastatic colorectal cancer patient (Lu et al., 2019), we again confirmed overall higher OXPHOS-related metabolic fluxes computed via GEM in a T cell clone that persisted for up to 266 days after transfer ("persistent clone 9.2-P") vs another clone targeting the same KRAS(G12D) epitope but did not persist for longer than 40 days ("non-persistent clone 9.1-NP"; Figure 1D; Methods). These results showcase that GEM and in particular the MTA algorithm is valuable in identifying metabolic determinants of T cell function and longevity.
+Although the above differential flux analysis results provide additional information than what can be obtained from only the gene expression level by integrating the metabolic network structure, the findings still represent the factors associated with T cell persistence and response, instead of causal factors. Trying to gain stronger evidence of causality and to identify the metabolic processes that are likely to causally determine the response, I applied the MTA algorithm as described and developed (based on previous algorithms [@yizhak_model-based_2013; @valcarcel_rmta_2019]) in the previous Chapter (Chapter \@ref(mta)). Here I first focused on the prediction of metabolic reactions whose KO can transform the T cell metabolic state from that of the responders to that of the non-responders using the anti-CD19 CAR-T therapy dataset [@fraietta_determinants_2018]. Applying the algorithm as such, the predicted metabolic reactions represent those that are essential for T cell anti-cancer function, since their KO’s are predicted to lead to non-responsiveness to CAR-T therapy.
 
-Next, we examined the top predictions made by MTA to identify candidates of novel metabolic regulators of T cell function. The top metabolic pathway enriched by MTA predictions is "Transport, Mitochondrial" (hypergeometric test FDR<0.05, Figure 1B). We therefore focused on this pathway and further separated all mitochondrial transport reactions by the metabolite being transported; while the transport of various nucleotides are enriched, we found that the top enriched metabolite is proton (H+, hypergeometric test FDR<0.1, Figure 1E). We note that these proton transport reactions include the various co-/anti-transporters of proton with other metabolites, but do not include the ETC and ATP synthase reactions. The enrichment of mitochondrial transport as well as proton transport specifically was also confirmed with the GSEA method (Figure 1F), suggesting that mitochondrial proton transport is critical for T cell function.
-	
-Since proton can be transported both into and out of the mitochondria, we aimed to determine whether T cell function is associated with a particular direction of proton transport. We found that the top MTA predictions mostly include the subset of proton transport reactions contributing to a higher mitochondrial proton influx in the anti-CD19 CAR-T responders vs non-responders (Wilcoxon rank-sum test P=0.0x, Figure 1G). Together with the observation that the responders also have higher total mitochondrial proton influx (Figure 1H), these suggest that mitochondrial proton inflow, rather than outflow, is specifically important for the T cell anti-tumor function. We further examined the mitochondrial uncoupling reaction, the key reaction responsible for proton release into the mitochondrial matrix, and found that consistently this reaction has higher flux in the responders vs non-responders (Figure 1I), and also in the persistent vs non-persistent T cell clone (Figure 1J) from the anti-KRAS(G12D) TIL dataset as described above (Lu et al., 2019). Together, these results point to mitochondrial uncoupling as an important regulator of T cell function and longevity.
+The metabolic pathways enriched by the top 10% MTA-predicted reactions are shown in  Figure \@ref(fig:ucp2-cart-mta-pathway). Some of the discovered pathways are known to be important in regulating T cell function, such as nucleotide and amino acid metabolism, as well as OXPHOS (reviewed in Section \@ref(intro-t-metab)). The most significant pathway enriched by top MTA predictions is "Transport, Mitochondrial" (Fisher's exact test adjusted P<0.05). I therefore next focused on this pathway, aiming to identify the specific metabolite whose mitochondrial transportation plays a key role by performing another enrichment analysis by each metabolite (results summarized in Figure \@ref(fig:ucp2-cart-mta-pathway-mito)). Interestingly, the top enriched metabolite is H^+^ (i.e. proton; Fisher's exact test adjusted P<0.1). I also confirmed the enrichment for mitochondrial transport, specifically proton transport reactions with the gene set enrichment analysis method specifically was also confirmed with the GSEA method (FDR<0.1; Appendix Figures \@ref(fig:ucp-cart-mta-mitotx-gsea) and \@ref(fig:ucp-cart-mta-mitoh-gsea)). Moreover, I also applied MTA on the ACT data from [@lu_single-cell_2019] and predicted metabolic reactions whose KO transforms the metabolic state from that of the 9.2-P persistent clone to that of the 9.1-NP non-persistent clone, as an independent analysis to identify metabolic processes essential for T cell persistence. The top predictions in this latter analysis were also enriched for mitochondrial transport reactions as well as specifically mitochondrial proton transport (FDR<0.1; Appendix Table \@ref(tab:ucp2-lu-mta-mitotx-h)). These results suggest that the mitochondrial proton transport reactions are important for T cell function and CAR-T therapy response.
 
-### Analysis of large-scale human transcriptome datasets identified UCP2 as the major gene for mitochondiral uncoupling in immune cells
+```{r ucp2-cart-mta-pathway, fig.cap="Metabolic pathway enrichment of the top MTA predictions on essential reactions to T cell anti-cancer function in CAR-T therapy.", fig.width=6, fig.height=3.5}
+load("data/ucp2/Fraietta/mta.res.RData")
+dat <- enr.res[padj<0.1]
+dat[, nlogp:=-log10(pval)]
+dat <- dat[gene.set!="Miscellaneous"][order(nlogp)]
+dat[, gene.set:=factor(gene.set, levels=gene.set[order(nlogp)])]
+setnames(dat, c("overlap.size","odds.ratio"), c("size","odds ratio"))
 
-There are three major mitochondrial uncoupling proteins (UCPs), namely UCP1, UCP2, and UCP3, located within the inner mitochondrial membrane with close proximity to ETC proteins (Krauss et al., 2005). Little is known about their function in CD8+ T cells. Analyzing human tissue gene expression data from the Human Protein Atlas (ref). We see that among the three genes UCP2 has much higher expression levels than UCP1 and UCP3 across tissues, and shows especially abundant levels in the PBMC, thymus and spleen, suggesting immune cell-associated expression (Figure 1K), which is consistent with a previous report (Rupprecht et al., 2012). Furthermore, we performed a correlation analysis in each of the cancer types available from the TCGA dataset (ref); strikingly we found a very prevalent positive correlation between the expression levels of UCP2 and a few T cell memory or stemness marker genes (including CD8A, TCF7, Il7R and SELL) across cancer types, after controlling for tumor purity (Figure 1L; Methods). Such correlations are not found for UCP1 or UCP3 (Figure S1x). Higher UCP2 expression level is also associated with better overall survival in melanoma patients from TCGA (Figure S1x). These results further support the role of UCP2 in CD8+ T cell anti-tumor function, which we further investigated in depth.
+ggplot(dat, aes(x=gene.set, y=nlogp)) +
+  xlab(latex2exp::TeX("-log_{10}P")) +
+  geom_point(aes(color=`odds ratio`, size=size)) +
+  scale_color_continuous(low="grey", high="red3") +
+  theme_classic() +
+  thm(x.txt=list(angle=35, hjust=1), plt.margin=c(10,0,0,90))
+```
+
+```{r ucp2-cart-mta-pathway-mito, fig.cap="Enrichment for mitochondrial transport reactions by each metabolite by the top MTA predictions on essential reactions to T cell anti-cancer function in CAR-T therapy.", fig.width=6, fig.height=3}
+gs.mito.tx <- get.transport.info(recon1, c1="m", c2="c")
+gs.mito.tx <- lapply(gs.mito.tx, function(x) x$rxn)
+dat1 <- enrich.gsets(mta.res[id!=0 & percent.rank<20 & score>score[id==0], reaction], gs.mito.tx, recon1$rxns)[padj<0.1]
+dat1[, gene.set:=recon1$metNames[all2idx(recon1, paste0(gene.set,"[m]"))]]
+dat1[, nlogp:=-log10(pval)]
+dat1 <- dat1[order(nlogp)]
+dat1[, gene.set:=factor(gene.set, levels=gene.set[order(nlogp)])]
+setnames(dat1, c("overlap.size","odds.ratio"), c("size","odds ratio"))
+
+ggplot(dat1, aes(x=gene.set, y=nlogp)) +
+  xlab(latex2exp::TeX("-log_{10}P")) +
+  geom_point(aes(color=`odds ratio`, size=size)) +
+  scale_color_continuous(low="grey", high="red3") +
+  theme_classic() +
+  thm(x.txt=list(angle=30, hjust=1), plt.margin=c(10,0,0,10))
+```
+
+I next aimed to determine whether there exists a particular direction of mitochondrial proton transport (import or export) that is essential for T cell anti-cancer function. For this, I identified the reactions responsible for higher mitochondrial proton import in the anti-CD19 CAR-T responders than in non-responders, as well as the other sets of proton transport reactions showing the opposite trend. Comparing the MTA score of these two sets of reactions, I found that the former set has significantly higher MTA scores (Wilcoxon rank-sum test P=0.00018; shown in Figure \@ref(fig:ucp2-cart-mta-mito-h-dir)). Furthermore, the responders show both higher total mitochondrial proton influx as well as the mitochondrial uncoupling reaction flux (i.e. the key reaction for proton transport into the mitochondrial matrix), than the non-responders (Figures \@ref(fig:ucp2-cart-df-mito-h) and \@ref(fig:ucp2-cart-df-ucp)). These differences are also seen when comparing the persistent vs non-persistent T cell clones from the anti-KRAS(G12D) [@lu_single-cell_2019] TIL dataset (Appendix Figure \@ref(fig:ucp2-lu-df-ucp)). These results suggest that mitochondrial uncoupling is an important regulator of T cell function and persistence in ACT therapies.
+
+```{r ucp2-cart-mta-mito-h-dir, fig.cap="Comparing the MTA score ranks of the mitochondrial proton transport reactions contributing to higher mitochondrial proton influx in responders vs non-responders and those contributing to higher mitochondrial proton efflux in responders vs non-responders", fig.width=2, fig.height=2}
+mito.h <- get.transport.info(recon1, "h", "m", "c")$h[id %in% which(recon1$subSystems=="Transport, Mitochondrial")]
+h.res <- cart$df.res[match(mito.h$id, id), .(id, rxn, equ=mito.h$equ, diff.mean=diff.mean*mito.h$coef, rel.diff=rel.diff*mito.h$coef)][order(diff.mean)]
+h.res[, mta.rnk:=mta.res[match(h.res$id, id), percent.rank]]
+h.dat <- h.res[, .(group=ifelse(diff.mean>1e-6,"higher","lower"), mta.rnk)]
+
+ggplot(h.dat, aes(x=group, y=mta.rnk)) +
+  xlab("mito. H+ inflow in\nresponder vs non-responder") + ylab("MTA-Predicted\nTop % Rank") +
+  scale_y_reverse() +
+  geom_blank(data=data.table(group="higher",ym=c(0,100)), aes(y=ym)) +
+  geom_hline(yintercept=c(0,100), linetype="dashed", color="grey60") +
+  geom_point(size=1, color="grey60") +
+  geom_boxplot(aes(color=group), alpha=0) +
+  scale_color_brewer(palette="Dark2") +
+  theme_classic() +
+    theme(
+      axis.title.x=element_text(size=9),
+      axis.text.x=element_text(size=9),
+      axis.title.y=element_text(size=10),
+      axis.text.y=element_text(size=9),
+      plot.margin=margin(0,11,0,0),
+      legend.position="none",
+    )
+```
+
+```{r ucp2-cart-df-mito-h, fig.cap="Total mitochondrial proton influx in the T cells of the non-responders and responders to anti-CD19 CAR-T therapy.", fig.width=2, fig.height=2}
+plot.fluxes2(imat.res$nr$result.model, imat.res$r$result.model, group.names=c("non-responder","responder"), rxns=list(mito.h$rxn), coefs=list(mito.h$coef), ylab="Total Mitochondrial H+ Inflow\n(Excluding ETC\n and ATP Synthase)", ylim=c(120,190)) +
+  theme(legend.direction="vertical",
+        axis.title.y=element_text(size=9),
+        legend.box.margin=margin(-12,-12,-8,-12))
+```
+
+```{r ucp2-cart-df-ucp, fig.cap="Mitochondrial uncoupling reaction rate in the T cells of the non-responders and responders to anti-CD19 CAR-T therapy.", fig.width=2, fig.height=2}
+plot.fluxes2(imat.res$nr$result.model, imat.res$r$result.model, group.names=c("non-responder","responder"), rxns="Htm", ylab="Mitochondrial Uncoupling\n Reaction Rate", ylim=c(1,2.5)) +
+  theme(legend.direction="vertical",
+        legend.box.margin=margin(-12,-12,-8,-12))
+```
+
+### Analysis of large-scale human transcriptome datasets identified that mitochondrial uncoupling protein *UCP2* expression is associated with CD8 T cell stemness and ICB response.
+
+There are three major mitochondrial uncoupling proteins (UCPs): *UCP1*, *UCP2*, and *UCP3*, located in the inner mitochondrial membrane close to ETC protein complexes [@krauss_mitochondrial_2005]. Via the analysis of gene expression data across different types of human tissues from the Human Protein Atlas [@uhlen_proteomics_2015]. We see that among the three genes *UCP2* has much higher expression levels than *UCP1* and *UCP3* in the PBMC, thymus and spleen (Figure \@ref(fig:ucp2-hpa-ucp-expr)), suggesting that *UCP2* is the major form of mitochondrial uncoupling protein in immune cells. Further investigating the association between *UCP2* and T cell differentiation markers on the gene expression level in the TCGA data, I found that in many cancer types there is a positive correlation between *UCP2* expression and a several T cell memory or stemness marker genes (including *CD8A*, *TCF7*, *Il7R* and *SELL*) after controlling for tumor purity (Figure \@ref(fig:ucp2-tcga-ucp2-corr)), which were not observed for *UCP1* or *UCP3*. Additionally, analyzing various transcriptome datasets on anti-PD1 and anti-CTLA-4 ICB therapies [@van_allen_genomic_2015; @riaz_tumor_2017; @miao_genomic_2018], I found that *UCP2* expression levels tend to be higher in the responders than non-responders, although these expression data are from bulk tumor samples (Appendix Figures \@ref(fig:ucp2-icb-ucp2-de)). These results taken together support the role of *UCP2* in the anti-cancer function of CD8 T cells.
+
+```{r ucp2-hpa-ucp-expr, fig.cap="Expression levels of UCP1, UCP2 and UCP3 across human tissues.", fig.width=6, fig.height=2}
+dat.tis <- readRDS("data/ucp2/hpa.rna.tissue.consensus.RDS")
+dat.tis <- dat.tis[`Gene name` %in% c("UCP1","UCP2","UCP3"), .(gene=`Gene name`, tissue=Tissue, y=NX)][!tissue %in% c("B-cells","NK-cells","T-cells","appendix","dendritic cells","ductus deferens","duodenum","epididymis","fallopian tube","granulocytes","lymph node","monocytes","parathyroid gland","placenta","retina","salivary gland","seminal vesicle","tongue","tonsil","smooth muscle","heart muscle","gallbladder","vagina","endometrium","skeletal muscle")]
+dat.tis[tissue %in% c("amygdala","basal ganglia","cerebellum","cerebral cortex","corpus callosum","hippocampal formation","hypothalamus","midbrain","olfactory region","pituitary gland","pons and medulla","substantia nigra","thalamus"), tissue:="brain"]
+dat.tis <- dat.tis[, .(y=mean(y)), by=.(gene, tissue)]
+dat.tis <- dcast(dat.tis, gene ~ tissue, value.var="y")
+tmp <- dat.tis$gene
+dat.tis <- data.matrix(dat.tis[,-1])
+rownames(dat.tis) <- tmp
+dat.tis <- log(dat.tis+1)
+
+Heatmap(dat.tis,
+      name="log expr.",
+      col=c("grey80","red"),
+      border="grey50",
+      rect_gp=gpar(col="white", lwd=1),
+      row_names_side="left",
+      cluster_rows=FALSE,
+      column_names_rot=45,
+      column_names_gp=gpar(fontsize=11),
+      column_names_max_height=unit(30, "mm")
+   )
+```
+
+```{r ucp2-tcga-ucp2-corr, fig.cap="Correlation of UCP2 expression and the expression of several T cell stemness and memory marker genes across TCGA cancer types after controlling for tumor purity.", fig.width=6, fig.height=2.2}
+cor.res <- readRDS("data/ucp2/TCGA/Tm.gene.cor.RDS")
+cor.res <- lapply(cor.res, function(x) x[cancer.type!="OV"]) # the OV result seems to be driven by an outlier
+cor.res.coefs <- t(sapply(cor.res, function(x) {
+  res <- x$coef
+  names(res) <- x$cancer.type
+  res
+}))
+cor.res.padjs <- t(sapply(cor.res, function(x) {
+  res <- x$padj
+  names(res) <- x$cancer.type
+  res
+}))
+cor.res.coefs <- cor.res.coefs[1:4,colnames(cor.res.coefs)!="LAML"]
+cor.res.padjs <- cor.res.padjs[1:4,colnames(cor.res.padjs)!="LAML"]
+col_fun  <- colorRamp2(c(-1, 0, 1), c("blue2", "grey90", "red2"))
+
+Heatmap(cor.res.coefs,
+      name="coef.",
+      col=col_fun,
+      border="grey50",
+      rect_gp=gpar(col="white", lwd=1),
+      row_names_side="left",
+      cluster_rows=FALSE,
+      column_names_rot=45,
+      column_names_gp=gpar(fontsize=11),
+      column_names_max_height=unit(30, "mm"),
+      cell_fun=function(j, i, x, y, width, height, fill) {
+        if (cor.res.padjs[i,j]<0.05) grid.points(x, y, pch="*", gp=gpar(col="grey30", fontsize=10))
+      }
+   )
+```
 
 ### Ucp2 inhibition in mice T cells decreased T cell stemness marker expression and reduced anti-cancer function
 
-### GEM modeling supports increased reactive oxygen species as a mechanism underlying the effect of Ucp2
+To validate that *Ucp2* is indeed required for T cell anti-tumor function, our experimental collaborators performed experiments in mice Pmel-1 CD8^+^ T cells and inhibited Ucp2 with the small molecule genipin (which was shown to be a Ucp2 inhibitor [@zhang_genipin_2006]). With RNA-seq profiling of control T cells without genipin-treatment and the treated cells then performing DE analysis between the treated vs control groups, it was found that Ucp2 inhibition increased the expression of marker genes for effector T cell differentiation (*Eomes*) and T cell effector function (*Gzma*), but also increased the level of T cell exhaustion genes (*Havcr2* (*Tim3*), *Lag3*, *Cd244a* (*2B4*) and *Cd160*). On the other hand, T cell stemness and memory marker genes (*Tcf7*, *Lef1*, *Klf2*, *Sell*, *Il7r*, *Ccr7*) decreased in their expression. A summary of the DE results for these key genes are given in Table \@ref(tab:ucp2-genipin-de). GSEA analysis confirmed that the genipin-treated cells (compared to the control cells) is enriched for several gene sets associated with effector T cell function and T cell exhaustion (Figure \@ref(fig:ucp2-genipin-gsea)). Furthermore, the increase in effector function and exhaustion marker genes, and the decrease in T cell memory marker genes were confirmed by flow cytometry performed by our experimental collaborators (Appendix Figure \@ref(fig:ucp2-genipin-fc)). These results suggest that Ucp2 inhibition in T cells damped memory T cell differentiation and promoted T cell exhaustion.
 
-### Additional experiments in mice melanoma model validated the ROS-related mechanisms for the effect of Ucp2
+```{r}
+load("data/ucp2/ucp2/de.res.RData")
+#tmp <- de.res1$ctrl2gen[match(c("Eomes","Prf1","Gzma","Ifng","Cd274","Havcr2","Lag3","Cd244a","Cd160","Tcf7","Lef1","Klf2","Sell","Il7r","Ccr7"),id)][, padj:=p.adjust(pval, "BH")][padj<0.1]
+tmp <- de.res1$ctrl2gen[match(c("Eomes","Gzma","Havcr2","Lag3","Cd244a","Cd160","Tcf7","Lef1","Klf2","Sell","Il7r","Ccr7"),id)][, padj:=p.adjust(pval, "BH")][padj<0.1]
+```
 
-### MTA prediction of metabolic targets for improving T cell anti-cancer function
+```{r ucp2-genipin-de, results="asis"}
+knitr::kable(tmp, format="latex",
+  caption = "DE results of selected T cell differentiation and function marker genes in genipin-treated vs control mice Pmel-1 CD8 T cells.",
+  #longtable = TRUE,
+  booktabs = TRUE
+) %>% kableExtra::kable_styling(latex_options="scale_down")
+```
+
+```{r ucp2-genipin-gsea, out.width="100%", fig.cap="GSEA table and plots showing the enrichment of various T cell effector function and T cell exhaustion-associated pathways in genipin-treated vs control mice Pmel-1 CD8 T cells."}
+knitr::include_graphics(path="figure/ucp2/genipin.gsea.png")
+```
+
+In order to further validate whether *Ucp2* can affect the actual anti-tumor functions of the T cells, our experimental collaborators performed ACT therapy in the B16 mice melanoma model with wildtype (WT) CD8 T cells compared to CD8 T cells with *Ucp2* inhibition. Specifically, they adoptively transferred either vehicle-treated Pmel-1 CD8^+^ T cells or genipin-treated T cells into mice bearing subcutaneous syngeneic, large vascularized established B16 melanomas. It was found that with genipin-treated Pmel-1 CD8^+^ T cells, the tumors had a faster growth rate compared to the tumors treated with WT T cells (Figure \@ref(fig:ucp2-genipin-tumor)). This demonstrates that *Ucp2* is indeed essential for T cell function and can determine its efficacy in ACT therapy.
+
+```{r ucp2-genipin-tumor, out.width="45%", fig.cap="Tumor growth in B16 mice melanoma model treated by ACT of vehicle-treated CD8 T cells or genipin-treated CD8 T cells. Experimental groups: stars (untreated); red circles (WT T cells); black circles (genipin-treated T cells). Figure credit: Dr. Madhusudhanan Sukumar"}
+knitr::include_graphics(path="figure/ucp2/genipin.tumor.png")
+```
+
+### GEM modeling supports increased reactive oxygen species as a mechanism underlying the effect of *Ucp2*
+
+Next, we seek to understand the mechanisms underlying the effect of *Ucp2* on T cell function. Given that *Ucp2* is a mitochondrial uncoupling protein that regulates the ETC/OXPHOS efficiency which is also coupled to mitochondrial reactive oxygen species (ROS) production, we decided to investigate whether the effect of *Ucp2* can be mediated by ROS, as ROS has been known to play important roles in regulating T cell function [@chandel_evolution_2015; @mehta_mitochondrial_2017]. First starting with a computational approach, I used iMAT as described above to model the metabolic flux distributions in the genipin-treated Pmel-1 CD8 T cells and compared it to control cells. Since GEM does not explicitly model metabolite concentrations and is based on the steady state assumption, I defined the total flux through a metabolite as the absolute value of its total production rate (which is equal to the absolute value of its total consumption rate under the steady state assumption), which measures the level of activity in the metabolism of the metabolite. I computed the total flux through each ROS species, including hydrogen peroxide ($\mathrm{H_2O_2}$) and superoxide anion ($\mathrm{O_2^{\centerdot -}}$) in both the mitochondria and the cytosol. Increased fluxes through both mitochondrial and cytosol $\mathrm{O_2^{\centerdot -}}$ and $\mathrm{H_2O_2}$ were observed in genipin-treated T cells compared to control (Figure \@ref(fig:ucp2-genipin-gem-ros)). Although not a direct measure of ROS concentrations, this suggests that the ROS production, esp. mitochondrial $\mathrm{O_2^{\centerdot -}}$ that is directly coupled to ETC, is increased upon *Ucp2* inhibition, consistent with the role of *Ucp2* as a uncoupling protein.
+
+```{r ucp2-genipin-gem-ros, fig.cap="Total metabolic fluxes through mitochondrial and cytosol hydrogen peroxide and superoxide anion in genipin-treated Pmel-1 CD8 T cells vs vehicle-treated T cells. O2-: superoxide anion; H2O2: hydrogen peroxide; suffix '[m]' means mitochondiral, '[c]' means cytosol. The dot in each group denotes the mean of each distribution.", fig.width=6, fig.height=2}
+imat.res.gen <- readRDS("data/ucp2/ucp2/imat.res_1_0_.RDS")
+plot.met.fluxes2(imat.res.gen$Vehicle$result.model, imat.res.gen$Genipin$result.model, mets=c("o2s_m","h2o2_m","o2s_c","h2o2_c"), met.names=c("O2-[m]","H2O2[m]","O2-[c]","H2O2[c]"), group.names=c("Vehicle","Genipin"))
+```
+
+Furthermore, again taking advantage of the ability of GEM modeling in suggesting causality, I applied MTA to predict metabolic perturbations (KO's) that can reverse the genipin-treated metabolic state back to the control metabolic state. Conceptually, inhibiting these reactions will counteract the effect of genipin treatment, thus they may mediate the effect of Ucp2 inhibition by genipin. I found that the top 20% MTA predictions are enriched for the reactions that can generate ROS species (including those producing $\mathrm{H_2O_2}$ and $\mathrm{O_2^{\centerdot -}}$ in both the mitochondria and the cytosol, but excluding the reactions that catabolize $\mathrm{O_2^{\centerdot -}}$ into $\mathrm{H_2O_2}$, e.g. superoxide dismutase reactions; Fisher's exact test P=0.025, odds ratio=2.34; Table \@ref(tab:ucp2-genipin-mta-rev-ros)). Conversely, when applying MTA to predict metabolic KO's that can mimic the effect of genipin treatment, I found that several of the key cellular antioxidation reactions (including the catalase reaction, and those involving ROS scavenging by ascorbate and reduced glutathione) are highly ranked (Table \@ref(tab:ucp2-genipin-mta-ros)). Together these computational results suggest that the increase in ROS production may mediate the effect of Ucp2 inhibition by genipin.
+
+```{r}
+load("data/ucp2/ucp2/check.mta.res.RData")
+tmp <- c(intersect(mets2rxns(iMM1415, "o2s_m")[[1]], mets2rxns(iMM1415, "h2o2_m")[[1]]), intersect(mets2rxns(iMM1415, "o2s_c")[[1]], mets2rxns(iMM1415, "h2o2_c")[[1]]))
+rs.ros <- iMM1415$rxns[setdiff(unq(mets2rxns(iMM1415, c("o2s_m","o2s_c","h2o2_m","h2o2_c"), mode=1)), c(tmp, grep("transport", iMM1415$subSystems, ignore.case=TRUE)))]
+tmp <- enrich.gsets(top20.mta.hits$`1r_0`$ctrl2gen$reaction, list(`ROS producing reactions`=rs.ros), iMM1415$rxns, name="reaction")[, -c("padj","overlap.reactions")]
+```
+
+```{r ucp2-genipin-mta-rev-ros, results="asis"}
+knitr::kable(tmp, format="latex",
+  caption = "Enrichment of top MTA predictions whose KO can reverse the effect of genipin in ROS producing reactions",
+  #longtable = TRUE,
+  booktabs = TRUE
+) %>% kableExtra::kable_styling(latex_options="scale_down")
+```
+
+```{r}
+tmp <- top10.mta.hits$`1_0`$ctrl2gen[reaction %in% c("CATm","ASCBOX","GTHPi")][, .(reaction, equation=get.rxn.equations(iMM1415, reaction, use.names=TRUE), top.percent)]
+```
+
+```{r ucp2-genipin-mta-ros, results="asis"}
+knitr::kable(tmp, format="latex",
+  caption = "The predicted percent rank of several cellular antioxidation reaction in the MTA prediction of reactions whose KO can mimic the effect of genipin treatment",
+  #longtable = TRUE,
+  booktabs = TRUE
+) %>% kableExtra::kable_styling(latex_options="scale_down")
+```
+
+### The antioxidant N-acetylcysteine suppresses the increased ROS level in mice CD8 T cell due to Ucp2 inhibition and reversed T cell function
+
+To evaluate the role of ROS in the effect of *Ucp2* on T cell function, our experimental collaborators activated vehicle or genipin-treated mice Pmel-1 CD8^+^ T cells in the presence or absence of the antioxidant N-acetylcysteine (NAC). The mitochondrial ROS levels in the different experimental groups were measured with the MitoSOX fluorescent probe, and it was confirmed that genipin-treatment drastically increased mitochondrial ROS levels, while NAC can suppress the genipin-induced increase in ROS to a near baseline level (Figure \@ref(fig:ucp2-genipin-nac-ros)). RNA-seq was performed on the samples from the different experimental groups. DE analysis comparing to the genipin+NAC group to the genipin-treated group (without NAC) showed that NAC reversed the genipin-induced changes in T cell effector, stemness and memory genes (Table \@ref(tab:ucp2-genipin-nac-de)). Specifically, the marker genes associated with stemness and memory (*Tcf7*, *Klf2*, *Foxo1*, *Id3*) increased upon NAC treatment, and some effect and exhaustion marker genes (*Gzma*, *Gzmb*, *Cd244a*, *Cd160*) decreased. These changes are confirmed on the pathway level with GSEA analysis (results for the relevant gene sets summarized in Figure \@ref(fig:ucp2-genipin-nac-gsea)).
+
+```{r ucp2-genipin-nac-ros, out.width="45%", fig.cap="Mitochondrial ROS levels as measured by MitoSOX in genipin-treated mice Pmel-1 CD8 T cells, with or without NAC. Experimental groups: Veh (vehicle); Gen (genipin-treated); Gen+NAC (genipin+NAC-treated); NAC (NAC-treated). Figure credit: Dr. Madhusudhanan Sukumar"}
+knitr::include_graphics(path="figure/ucp2/genipin.nac.ros.png")
+```
+
+```{r}
+tmp <- de.res1$gen2gennac[match(c("Gzma","Gzmb","Cd244a","Cd160","Tcf7","Klf2","Foxo1","Id3","Il7r","Ccr7"),id)][, padj:=p.adjust(pval, "BH")][padj<0.1]
+```
+
+```{r ucp2-genipin-nac-de, results="asis"}
+knitr::kable(tmp, format="latex",
+  caption = "DE results of selected T cell differentiation and function marker genes in genipin+NAC-treated vs genipin-treated mice Pmel-1 CD8 T cells.",
+  #longtable = TRUE,
+  booktabs = TRUE
+) %>% kableExtra::kable_styling(latex_options="scale_down")
+```
+
+```{r ucp2-genipin-nac-gsea, out.width="100%", fig.cap="GSEA table and plots showing the enrichment of various T cell effector function and T cell exhaustion-associated pathways in genipin+NAC-treated vs genipin-treated (without NAC) mice Pmel-1 CD8 T cells."}
+knitr::include_graphics(path="figure/ucp2/genipin.nac.gsea.png")
+```
+
+Finally, to evaluate whether NAC can reverse the decreased anti-tumor function of the CD8 T cells with Ucp2 inhibition, out experimental collaborators adoptively transferred the genipin-treated Pmel-1 CD8^+^ T cells cultured either with or without NAC into wild-type mice bearing subcutaneous syngeneic, large vascularized established B16 melanomas. It can be seen that NAC significantly rescued the impaired anti-tumor function of the genipin-treated T cells; NAC treatment (without genipin) also further improved the efficacy in tumor control compared to WT untreated CD8 T cells (Figure \@ref(fig:ucp2-genipin-nac-tumor)). In summary, these results consolidate that the effect of Ucp2 on T cell anti-cancer function is mediated by ROS.
+
+```{r ucp2-genipin-nac-tumor, out.width="55%", fig.cap="Tumor growth in B16 mice melanoma model treated by ACT of genipin-treated CD8 T cells or genipin+NAC-treated CD8 T cells. NT: non-treated; 25-Genipin: treatment with 25 micro molar genipin. Figure credit: Dr. Madhusudhanan Sukumar"}
+knitr::include_graphics(path="figure/ucp2/genipin.nac.tumor.png")
+```
 
 ## Materials and Methods
 
@@ -43,21 +285,29 @@ There are three major mitochondrial uncoupling proteins (UCPs), namely UCP1, UCP
 
 Differential expression (DE) analysis of responders vs non-responders of various cancer immunotherapy datasets, as well as for the mice T cells between different experimental conditions (control, NAC and/or genipin treatment) were performed with edgeR [@robinson_edger_2010]. For gene set enrichment analysis (GSEA) [@subramanian_gene_2005] from the DE log fold-change results, an implementation of the GSEA algorithm in the R package fgsea [@korotkevich_fast_2021] was used, with gene set annotations were taken from the MSigDB database [@liberzon_molecular_2011]. Specifically, the "C7 immunologic signature gene sets" from MSigDB v7.0 was used to analyze the differences in T cell activation or memory functions across the mice T cell samples treated by NAC and/or genipin.
 
+### Computation of metabolic fluxes from gene expression data with GEM and differential flux analysis
+
+For each dataset, we used the GEM algorithm iMAT [@shlomi_network-based_2008] to compute the metabolic flux profile from gene expression data. iMAT requires gene-length normalized expression values in the bulk RNA-seq datasets, for this we used TPM or RPKM values. Then for each dataset, we took the median expression values of the samples from each group/experimental condition as their representative expression profile, and used it as input to iMAT. We applied iMAT to model the median expression in each group or experimental condition to reduce data noise; this is also due to that iMAT is not efficient in modeling metabolic flux from the similar samples within each group. The human GEM Recon 1 [@duarte_global_2007] was used for modeling human data in the various cancer immunotherapy datasets, while the mouse model iMM1415 [@sigurdsson_detailed_2010] is used for modeling mice T cell data (i.e. genipin/NAC treatment data). The output of iMAT is a refined GEM for the each of the groups/experimental conditions in each dataset, with metabolic reaction bounds adjusted to achieve maximal concordance with the gene expression data while satisfying the stoichiometric constraints of the cellular metabolic network [@shlomi_network-based_2008]. Each output model defines a space rather than a single unique solution of the global metabolic flux profile, and ACHR was used to sample the metabolic space and obtain the flux distribution of each metabolic reaction in each condition and dataset. The resulting flux distributions are smooth (rather than discrete with replicates like experimentally collected data), and are meant to be the representative flux distribution for each group/condition; the variation in the distribution reflects uncertainty in the computation and flexibility in the metabolic space, rather than variation across samples. Therefore, subsequent comparisons of the flux distributions between two groups/conditions were carried out in a qualitative manner by plotting and visually inspecting the smooth flux distributions and not by statistical tests (as these distributions are equivalent to population distributions rather than sample distributions). All GEM analyses were performed using our in-house R package named gembox, with the academic version of IBM ILOG CPLEX Optimization Studio 12.10 as the optimization solver.
+
 ### Genome-scale metabolic modeling-based prediction of metabolic functions determining response to anti-CD19 CAR-T therapy
 
-Gene expression data of the CAR-T cells for responders and non-responders was obtained from Fraietta et al. [ref]. The median expression profiles across all responders and all non-responders were computed respectively, then the iMAT algorithm [ref] was used to obtain the condition-specific metabolic models of the two groups (responder and non-responder), and then ACHR sampling [ref] was used to obtain the fluxes distributions of all metabolic reactions. A variant of the MTA algorithm [ref], called rMTA [refs] was then applied to predict metabolic reactions whose knock-out can transform cellular metabolic state from that of the responder to that of the non-responder. The output of rMTA is a score (rMTA score) for each metabolic reaction, with higher scores corresponding to better candidates for achieving the metabolic transformation as specified above. For the genome-scale metabolic modeling, the human Recon 1 model was used [ref].
+Gene expression data of the anti-CD19 CAR-T cells for responders and non-responders was obtained from [@fraietta_determinants_2018]. The median expression profiles across all responders and all non-responders were computed respectively, then representative metabolic flux distributions of the responders were computed as described in the above section. The DE genes in the non-responders compared to the responders were also identified as described above. These were then passed as inputs for the GEM-based MTA algorithm [described in Chapter \@ref(mta), based on @yizhak_model-based_2013; @valcarcel_rmta_2019] to predict metabolic reactions whose knock-out can transform cellular metabolic state from that of the responders to that of the non-responders. The output of MTA is a score (MTA score) for each metabolic reaction, with higher scores corresponding to better candidates for achieving the metabolic transformation as specified above. From our previous experience [@yizhak_model-based_2013], the top 10-20% MTA predictions contain promising targets, and were used for downstream analysis. The MTA algorithm implemented in our in-house R package named gembox was used, with the academic version of IBM ILOG CPLEX Optimization Studio 12.10 as the optimization solver.
 
 ### Metabolic pathway analysis of the MTA-predicted metabolic reactions
 
-The "subSystems" data slot from the human Recon 1 genome-scale metabolic model was used as metabolic pathway annotations for each metabolic reaction (i.e. each "sub system" is treated as one metabolic pathway). Fisher’s exact test was used to test for significant enrichment of each metabolic pathway in the top 10% reactions predicted by rMTA as described above. P values were corrected for multiple hypotheses with the Benjamini-Hochberg method. Further, to closely analyze the enrichment for mitochondrial transport reactions in a metabolite-specific manner, the transport reactions across the mitochondrial membrane for each metabolite were identified from the Recon 1 model (the model does not distinguish between the inner and outer membrane of the mitochondria), and these were used as reaction sets. The enrichment of top 10% rMTA-predicted reactions in these reaction sets were tested with Fisher’s exact test similarly as above. As an independent approach, the GSEA method [ref] was also used to test for the enrichment of top rMTA-predicted reactions in the "Transport, Mitochondrial" pathway and specifically the set of mitochondrial proton transport reactions. For this the pathway/reaction set was defined as above, and all metabolic reactions ranked by their rMTA score was passed to the GSEA algorithm to compute the result.
+The "subSystems" data slot from the human Recon 1 genome-scale metabolic model [@duarte_global_2007] was used as metabolic pathway annotations for each metabolic reaction (i.e. each "sub system" is treated as one metabolic pathway). Fisher's exact test was used to test for significant enrichment of each metabolic pathway in the top 10% reactions predicted by MTA as described above. P values were corrected for multiple hypotheses with the Benjamini-Hochberg method. Further, to closely analyze the enrichment for mitochondrial transport reactions in a metabolite-specific manner, the transport reactions across the mitochondrial membrane for each metabolite were identified from the Recon 1 model (the model does not distinguish between the inner and outer membrane of the mitochondria), and these were used as reaction sets. The enrichment of top 10% MTA-predicted reactions in these reaction sets were tested with Fisher's exact test similarly as above. As an independent approach, the GSEA method [@subramanian_gene_2005] was also used to test for the enrichment of top MTA-predicted reactions in the "Transport, Mitochondrial" pathway and specifically the set of mitochondrial proton transport reactions. For this the pathway/reaction set was defined as above, and all metabolic reactions ranked by their MTA score was passed to the GSEA algorithm to compute the result.
 
-### Genome-scale metabolic modeling-based differential flux analysis
+### Genome-scale metabolic modeling-based prediction of metabolic processes that possibly mediates the effect of Ucp2
 
-Genome-scale metabolic modeling was used to compute the metabolic flux distributions from the gene expressions profiles of different samples analyzed or generated in our study. These include the CAR-T cells from responders and non-responders in anti-CD19 CAR-T therapy (Fraietta et al.), the persistent and non-persistent T cell clones in an adoptive T cell transfer therapy (Lu et al.), and the mice T cell samples treated by NAC and/or genipin generated in our study. For human samples/data, the Recon 1 model was used, and for mice samples, the mouse genome-scale metabolic model (iMM1415) [ref] was used for the modeling and was obtained from the BiGG database [ref]. The expression profiles were averaged across samples in each group or experimental condition by taking the median, and iMAT [ref] was applied to the median expression profiles, generating group/condition-specific metabolic models. ACHR sampling [ref] was then used to generate the fluxes distributions of all metabolic reactions. We applied iMAT to model the median expression in each group or experimental condition to reduce data noise; this is also due to that iMAT is not efficient in modeling metabolic flux from the similar samples within each group. The resulting flux distributions are smooth (rather than discrete with replicates like experimentally collected data), and are meant to be the representative flux distribution for each group/condition; the variation in the distribution reflects uncertainty in the computation and flexibility in the metabolic space, rather than variation across samples. Therefore, subsequent comparisons of the flux distributions between two groups/conditions were carried out in a qualitative manner by plotting and visually inspecting the smooth flux distributions and not by statistical tests (as these distributions are equivalent to population distributions rather than sample distributions).
+The DE analysis between the control (vehicle-treated) mice Pmel-1 CD8^+^ T cells and the genipin-treated CD8^+^ T cells, as well as the computation of the metabolic fluxes in these two experimental conditions were performed as described above. The MTA algorithm as above [described in Chapter \@ref(mta), based on @yizhak_model-based_2013; @valcarcel_rmta_2019] was applied to predict metabolic reactions whose knock-out can transform cellular metabolic state from that of the genipin-treated cells back to that of the control cells. The top predictions from this analysis may represent those that can mediate the effect of Ucp2 inhibition on the metabolic level.
 
-### Applying metabolic modeling to identify the major targets of genipin
+### Analysis of the expression levels of mitochondrial uncoupling genes across human tissues or in various ICB datasets
 
-Based on the RNA-seq data of the vehicle and genipin-treated CD8+ T cells and the mouse metabolic model iMM1415 as described above, the metabolic transformation algorithm (MTA)[ref] was used to identify the metabolic gene(s) whose inhibition can transform the cellular metabolic state from that of the vehicle cells to that of the genipin-treated cells, thus effectively identifying the targets of genipin. MTA ranks all the metabolic reactions based on their probability of being the target of genipin, and UCP2-catalyzed reaction was ranked among the top 2% of all reactions, strongly supporting that UCP2 is a major target of genipin.
+The gene expression profile data for different types of human tissues were obtained from the Human Protein Atlas database [@uhlen_proteomics_2015]. The "RNA consensus tissue gene data" was used, and *UCP1*, *UCP2* and *UCP3* expression levels across all the available human tissue types were examined. Several datasets on the transcriptomes of tumor samples from anti-PD-1 and anti-CTLA-4 ICB therapies were obtained from their respective studies, including [@van_allen_genomic_2015; @riaz_tumor_2017; @miao_genomic_2018]. The *UCP2* expression levels in the bulk tumor samples between the responders and non-responders to therapy were compared via the DE analysis as described above. 
+
+### Analysis of the correlation between *UCP2* and several T cell function/stemness marker gene expression across TCGA cancer types
+
+The RNA-seq data of the TCGA samples were downloaded from the UCSC Xena database [@goldman_visualizing_2020] as read counts, which were then normalized across samples within each cancer type with the TMM method from edgeR [@robinson_edger_2010] and log-transformed. The phenotypic data including tumor purity of each sample was also obtained. The *CD8A* gene as the marker gene for CD8^+^ T cell and *TCF7*, *CD27*, *SELL* as marker genes of T cell stemness or memory were analyzed. Within each cancer type and for each marker gene, the association between its expression and *UCP2* expression was analyzed with a linear model with tumor purity as a covariate (independent variable).
 
 ### Softwares and code
 
@@ -65,4 +315,15 @@ R version 3.6.3 was used for all statistical tests. P values lesser than 2.22e-1
 
 ## Discussion and Conclusion
 
+ACT therapy, especially CAR-T therapy has been a major promising development among the different cancer immunotherapies under clinical investigation in the recent years, achieving highly durable response in many patients of mainly hematological cancers, and in some cases essentially cured the patients [@porter_chimeric_2011; @grupp_chimeric_2013; @brentjens_cd19-targeted_2013]. CD8 T cell has been recognized as a major player among the various mechanisms that the immune system utilizes to control and kill cancer, and is currently at the center of ACT therapy [@styczynski_brief_2020]. Especially, the persistence and longevity of the infused CD8 T cells in patients have been shown to determine the efficacy of therapy [@jiang_adoptive_2019]. Besides in ACT therapy, the functional state of T cells has also been shown to be correlated with ICB therapy response [@sade-feldman_defining_2018; @van_allen_genomic_2015]. Strategies for increasing T cell stemness and longevity and for reducing T cell exhaustion is highly desirable for both ACT and ICB therapies and present a current challenge for the further improvement of these cancer immunotherapies [@jiang_adoptive_2019; @meric-bernstam_enhancing_2020]. It is therefore important to further characterize the factors that regulate T cell function and differentiation.
+
+As reviewed in Section \@ref(intro-t-metab), metabolism has been recognized to be intricately coupled to T cell signaling, which can in turn modulate the fates of T cell differentiation and different T cell functions. In this study, I adopted a metabolic modeling-driven approach aiming to identify novel metabolic processes that are important for T cell function. To this aim, I mainly relied on published ACT datasets, including the CAR-T cell expression data of an anti-CD19 CAR-T therapy in CLL [@fraietta_determinants_2018], and the KRAS(G12D)-targeting TIL expression data of an ACT therapy in a metastatic colorectal cancer patient [@lu_single-cell_2019]. The expression profiling in these datasets was performed specifically for the T cells that would be infused into the patients, and the T cells are known to harbor TCR specific to certain tumor antigens presented by the patients' tumors. Therefore, the differences detected in responders vs non-responders (or persistent clones vs non-persistent clones) are more likely to represent T cell-intrinsic properties (despite that properties of the tumor can also have an impact). In comparison, the characteristics of the tumor could play a relatively larger part in determining the response in ACT therapy, and may represent extra variables to control for [@mok_pembrolizumab_2019; @samstein_tumor_2019; @le_mismatch_2017]. Besides, to isolate T cell-specific expression in the tumors treated by ACT, single-cell RNA-seq is needed. Given our focus on the T cells, I therefore used the ACT datasets for the main analyses, while several ICB datasets were used to verify the findings.
+
+A key idea of the modeling-based approach of this study is that, via the MTA prediction of metabolic processes whose inhibition (KO) can result in a non-responder-like T cell metabolic state, metabolic properties essential to T cell anti-tumor function that are likely to have a causal role can be identified. The top pathway enriched for the MTA-predicted targets was mitochondrial transport, which echoes the prior knowledge on the important roles of mitochondrial metabolism in regulating T cell function [@desdin-mico_mitochondrial_2018], and that modulating T cell mitochondrial function has been proposed as a promising strategy to improve immunotherapy response [@li_rewiring_2020]. In the further analysis, the mitochondrial proton transport reactions were found to be enriched by the top predictions. It needs to be noted that there are more than 20 reactions from the human Recon 1 model that involves the carrying of proton across the mitochondrial membrane (the Recon 1 does not distinguish between the inner membrane and outer membrane). Notably, all ETC reactions pump protons out from the mitochondrial matrix to build up the proton gradient for ATP synthesis by the ATP synthase, which utilizes the proton inflow back into the mitochondrial matrix. However, due to the special function of the ETC proton pumps and ATP synthase, these reactions were not included in the set of mitochondrial proton transport reactions in the analysis. 
+
+It was further determined that the inflow of proton into the mitochondrial matrix is important for T cell function. Mitochondrial proton inflow, known as mitochondrial uncoupling, is classically known for it function in dissipating the proton gradient across the mitochondrial inner membrane built up by the ETC activity to generate heat and modulate (reduce) ATP production [@demine_mitochondrial_2019], although it has further been found to have regulatory roles in autophagy, mitophagy, cell death, ROS production and cell signaling [@demine_mitochondrial_2019]. Notably, ROS is generated as a byproduct of ETC as part of the normal cell physiology, and mitochondrial uncoupling can therefore reduce ROS production due to the negative regulation of ETC function [@tahara_tissue-_2009], although this may be dependent on many factors of cellular conditions [@demine_mitochondrial_2019]. Several uncoupling proteins are known to serve as the transporter for the proton inflow. For example, the brown adipose tissue (a major site of heat production in the body) is characterized by *UCP1* expression [@demine_mitochondrial_2019]. UCP1 has also been shown to regulate cell apoptosis during T cell development in the thymus [@adams_absence_2010]. However, there has been mixed results in terms of whether the UCP2 protein has uncoupling function [@couplan_no_2002; @berardi_fatty_2014], and it has been suggested that the uncoupling function of UCP2 may be regulated and can be activated under specific conditions [@donadelli_ucp2_2014]. Regardless of its uncoupling function, nevertheless, UCP2 has been shown to play various important roles in various cell types and contexts. For example, it can regulate mitophagy and protect the heart muscle from ischemic injury [@wu_ucp2_2019]. It is also highly expressed in many different types of cancer and is associated with increased tumor proliferation and biosynthetic activities [@sreedhar_ucp2_2019]. Recently, a study showed that the expression of *UCP2* in the cancer cells in melanoma sensitizes the tumor to anti-PD-1 ICB therapy [@cheng_uncoupling_2019]. There are also previous studies showing the role of UCP2 in T cells. UCP2 has been shown to be upregulated during T cell activation and proliferation [@krauss_significant_2002; @rupprecht_quantification_2012]. Further corroborating our findings that UCP2 has a role in regulating ROS production, it was previously shown that UCP2 inhibition with genipin in antigen-stimulated OT-1 CD8 T cells led to increased mitochondrial ROS, which was associated with increased apoptotic gene expression and reduced T cell expansion [@chaudhuri_uncoupling_2016]. Interestingly, the authors also proposed that UCP2 can be modulated to boost ACT therapy efficacy, which we established in our study.
+
+The widespread role of ROS in cell signaling and regulating cell death, senescence and differentiation has long been documented. In T cells, TCR signaling can promotes mitochondrial activity and ROS generation, and ROS signaling has been shown to activate NFAT and induce IL-2 production [@sena_mitochondria_2013]. The role of ROS in T cell differentiation and On the other hand, high level of ROS, i.e. oxidative stress can lead to DNA damage, leading to cell senescence and cell death [@liochev_reactive_2013], which has been shown in different types of stem cells to decrease their self-renewal [@suda_metabolic_2011; @chandel_metabolic_2016]. This may also be implicated in the process of T cell differentiation [@franchina_reactive_2018], for example, it has been shown that less differentiated human CD8 T cells have higher antioxidation capacity than the more differentiated T cells, and NAC-treated stem-cell memory T cells (Tscm) exhibited improved long-term memory [@pilipow_antioxidant_2018]. In our study, such important role of ROS in T cell differentiation and stemness was also recaptured, and we further showed that the effect of UCP2 on T cell anti-cancer function was actually mediated by ROS, which is consistent with the previous reports on UCP2 as discussed above [@chaudhuri_uncoupling_2016]. However, given the conflicting evidence on the extent of uncoupling function of UCP2, it remains to be established whether the regulation of ROS by UCP2 is mediated by the uncoupling function of the latter.
+
+In conclusion, in this computation-driven study, I applied metabolic modeling to analyze a few datasets of CD8 T cell gene expression in the context of cancer immunotherapies, especially ACT therapy (including CAR-T). Via predicting metabolic perturbations that can transform cellular metabolic states between different samples, the MTA algorithm was able to first identify mitochondrial uncoupling as an essential process for T cell function, then predict that the underlying mechanism of the effect of mitochondrial uncoupling protein UCP2 inhibition is the production of ROS. Both predictions were then successfully validated by experiments with mice CD8 T cells *in vitro* and in the context of ACT therapy with the mice B16 melanoma model. This study demonstrates the value of a model-based approach in identifying relevant causal factors in the domain of cell metabolism, and establishes the role of UCP2 in T cell anti-tumor function via the regulation of ROS.
 

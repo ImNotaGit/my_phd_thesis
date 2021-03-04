@@ -85,9 +85,10 @@ SARS-CoV & Severe Acute Respiratory Syndrome Coronavirus \\
 SARS-CoV-2 & Severe Acute Respiratory Syndrome Coronavirus 2 \\
 scRNA-seq & Single-Cell RNA-Sequencing \\
 TCA & Tricarboxylic Acid \\
+TCGA & The Cancer Genome Atlas \\
 TCR & T Cell Receptor \\
 THF & Tetrahydrofolate \\
-TIL & Tumor-Infiltrating Lymphocytes \\
+TIL & Tumor-Infiltrating Lymphocyte \\
 TMB & Tumor Mutational Burden \\
 TME & Tumor Microenvironment \\
 TRS & Transcription Regulatory Sequences \\

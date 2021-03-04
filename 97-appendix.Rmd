@@ -6,9 +6,120 @@
 
 # Appendices {-}
 
+Additional figures and tables for each chapter are given below.
+
 ## Chapter \@ref(mta) {-}
 
+```{r}
+tmp <- readRDS("data/mta/datasets.rds")
+```
+
+```{r mta-datasets, results="asis"}
+knitr::kable(tmp, format="latex",
+  caption = "Gene expression datasets involving metabolic gene perturbation (KO/KD/protein inhibition) collected for the validation of the MTA algorithm and its variants",
+  longtable = TRUE,
+  booktabs = TRUE
+)# %>% kableExtra::kable_styling(latex_options="scale_down")
+```
+
+```{r mta-de-gt-20, fig.cap="The prediction performance of mMeTAL in the 9 datasets where the ground truth gene is not among the top 20% DE genes.", fig.width=5, fig.height=2}
+metal <- new.env()
+load("data/mta/rmetal.check.res.RData", envir=metal)
+de.ranks <- readRDS("data/mta/de.rank.rds")
+tmp <- metal$res[,,,names(de.ranks)[de.ranks>0.2]] # 9 datasets, >0.1 gives the same
+
+tmpf <- function(id) {
+mat <- apply(tmp[id,,,], 2, function(x) rowSums(x<0.1))
+colf <- colorRamp2(c(0,5,9), c("grey95","orange","red"))
+Heatmap(mat, 
+        col=colf,
+        name="#datasets\n ground truth\n among top 10%",
+        row_title="alpha",
+        row_names_side="left",
+        cluster_rows=FALSE,
+        column_title="n",
+        column_title_side="bottom",
+        column_names_side="bottom",
+        cluster_columns=FALSE,
+        cell_fun=function(j, i, x, y, width, height, fill) grid.text(sprintf("%d", mat[i,j]), x, y, gp=gpar(fontsize=10))
+)
+}
+tmpf("mmetal.1")
+```
+
+```{r mta-de-rm-ctrl, fig.cap="The prediction performance of mMeTAL in the 9 datasets where the ground truth gene is not among the top 20% DE genes.", fig.width=5, fig.height=2}
+rmetal.rm <- new.env()
+load("data/mta/rmetal.rm.true.gene.res.RData", envir=rmetal.rm)
+
+mat <- rmetal.rm$summ.cnt$mmetal.1
+colf <- colorRamp2(c(0,15,30), c("grey95","orange","red"))
+Heatmap(mat, 
+        col=colf,
+        name="#datasets\n ground truth\n among top 10%",
+        row_title="alpha",
+        row_names_side="left",
+        cluster_rows=FALSE,
+        column_title="n",
+        column_title_side="bottom",
+        column_names_side="bottom",
+        cluster_columns=FALSE,
+        cell_fun=function(j, i, x, y, width, height, fill) grid.text(sprintf("%d", mat[i,j]), x, y, gp=gpar(fontsize=10))
+)
+```
+
 ## Chapter \@ref(ucp2) {-}
+
+```{r ucp2-lu-df-oxphos, fig.cap="Computed metabolic flux distributions of the ETC/OXPHOS reactions in the 9.2-P persistent T cells vs the 9.1-NP non-persistent T cells in ACT.", fig.width=6, fig.height=2}
+imat.res.lu <- readRDS("data/ucp2/Lu/imat.res.RDS")
+plot.fluxes2(imat.res.lu$np9$result.model, imat.res.lu$p9$result.model, group.names=c("non-persistent (clone 9.1-NP)", "persistent (clone 9.2-P)"),
+             rxns=list(`Complext 1`="NADH2_DASH_u10m", `Complext 3`="CYOR_DASH_u10m", `Complext 4`="CYOOm3", `ATP Synthase`="ATPS4m"),
+             ylims=list(c(-10,40), c(-10,40), c(-10,40), c(20,100)))
+```
+
+```{r ucp-cart-mta-mitotx-gsea, fig.cap="GSEA plot showing the enrichment for the mitochonrial transport pathway by the top MTA predictions on essential reactions to T cell anti-cancer function in CAR-T therapy.", fig.width=3, fig.height=1.6}
+load("data/ucp2/Fraietta/mta.res.RData")
+rs.tx.mito <- recon1$rxns[recon1$subSystems=="Transport, Mitochondrial"]
+x <- mta.res[, score-score[id==0]]
+names(x) <- mta.res$reaction
+x <- x[!is.na(x)]
+fgsea::plotEnrichment(rs.tx.mito, x)
+```
+
+```{r ucp-cart-mta-mitoh-gsea, fig.cap="GSEA plot showing the enrichment for the mitochonrial proton transport reactions by the top MTA predictions on essential reactions to T cell anti-cancer function in CAR-T therapy.", fig.width=3, fig.height=1.6}
+rs.h <- get.transport.info(recon1, "h", "m", "c")$h$rxn
+fgsea::plotEnrichment(rs.h, x)
+```
+
+```{r}
+load("data/ucp2/Lu/check.mta.res.RData")
+gs.mito.tx <- get.transport.info(recon1, c1="m", c2="c")
+gs.mito.tx <- lapply(gs.mito.tx, function(x) x$rxn)
+tmp <- rbind(path.enr.res10$p2np[reaction.set=="Transport, Mitochondrial"],
+             enrich.gsets(top10.mta.hits$p2np$reaction, gs.mito.tx, recon1$rxns, name="reaction")[reaction.set=="h"][, reaction.set:="Mitochondrial Proton Transport"])[, -"overlap.reactions"]
+```
+
+```{r ucp2-lu-mta-mitotx-h, results="asis"}
+knitr::kable(tmp, format="latex",
+  caption = "Enrichment of mitochondrial transport pathway and mitochondrial proton transport reactions by the top 10% MTA predicted reactions whose KO can reduce T cell persistence in ACT therapy.",
+  #longtable = TRUE,
+  booktabs = TRUE
+) %>% kableExtra::kable_styling(latex_options="scale_down")
+```
+
+```{r ucp2-lu-df-ucp, fig.cap="Mitochondrial uncoupling reaction rate in the 9.2-P persistent T cells vs the 9.1-NP non-persistent T cells in ACT.", fig.width=1.5, fig.height=1.5}
+plot.fluxes2(imat.res.lu$np9$result.model, imat.res.lu$p9$result.model, group.names=c("non-persistent (clone 9.1-NP)", "persistent (clone 9.2-P)"), rxns="Htm", ylab="Mitochondrial Uncoupling\n Reaction Rate", ylim=c(NA,10)) +
+  theme(axis.title.y=element_text(size=10),
+        legend.direction="vertical",
+        legend.box.margin=margin(-8,5,-8,-20))
+```
+
+```{r ucp2-icb-ucp2-de, out.width="100%", fig.cap="UCP2 expression levels in the tumor samples from responders and non-responders in various ICB datasets."}
+knitr::include_graphics(path="figure/ucp2/icb.ucp2.de.png")
+```
+
+```{r ucp2-genipin-fc, out.width="100%", fig.cap="Flow cytometry results on the level of various T cell activation, effector function, memory and senescence gene markers in genipin-treated vs control mice Pmel-1 CD8 T cells. The gene markers are as follows: T cell activation (CD25, CD44), memory (CD62L), effector molecule (GzmB), senescence (KLRG1) and exhaustion (PD1). Figure credit: Dr. Madhusudhanan Sukumar"}
+knitr::include_graphics(path="figure/ucp2/genipin.markers.fc.png")
+```
 
 ## Chapter \@ref(covid) {-}
 

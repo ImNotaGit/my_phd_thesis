@@ -2,24 +2,252 @@
 library(my.utils)
 library(gembox)
 library(ComplexHeatmap)
+library(circlize)
 ```
 
 
-# The analysis and improvement of metabolic transformation algorithms {#mta}
+# Analysis and improvement of metabolic transformation algorithms {#mta}
 
 ## Introduction
 
-Genome-scale metabolic modeling (GEM) algorithms have been applied to study cell metabolism under a wide variety of contexts, and have repeatedly proven to be valuable for generating accurate predictions and informative hypotheses [@gu_current_2019] (Section \@ref(intro-gem)). Here we focus on the metabolic transformation algorithm (MTA), initially developed in 2013 [@yizhak_model-based_2013], which is used for the prediction of metabolic targets whose KO can transform the cellular metabolic state from a given reference state to a given target state (Section \@ref(intro-gem-algo)). Apparently, this algorithm can be used for therapeutic target prediction for many metabolism-related diseases, by reversing the perturbed cell metabolism under the diseased state back to the normal healthy state. But thanks to its mechanism-based modeling approach under the GEM framework, MTA can also be more widely used to predict potential causal factors and perturbations beyond what can be identified from classical statistical inference. In the original study, MTA was used to predict lifespan-extending genes in the budding yeast *Saccharomyces cerevisiae*, and successfully identified two novel lifespan-extending metabolic genes (*adh2* and *gre3*) whose KO's were experimentally validated to significantly prolong the chronological lifespan of yeast [@yizhak_model-based_2013]. In a subsequent study, MTA was used to predict metabolic cancer driver genes, resulting in a novel cancer driver gene *FUT9* in colorectal cancer [@auslander_integrated_2017]. A more recent study applied MTA and successfully predicted mitochondrial dihydroorotate dehydrogenase (DHODH) involved in pyrimidine nucleotide biosynthesis as an effective therapeutic target for an intractable epilepsy called Dravet syndrome [@styr_mitochondrial_2019]. Despite repeated successful applications, the original algorithm was mostly validated in the bacteria *E. coli*, with only a few validations in higher organisms (2 validation datasets for mice and 2 for human); the performance in the mice and human datasets also appeared relatively weaker than those in the *E. coli* [@yizhak_model-based_2013]. Here I aim to perform a deeper investigation to comprehensively evaluate the performance of MTA in higher organisms especially human, also seeking to optimize the algorithm and further improve its prediction accuracy.
+GEM algorithms have been applied to study cell metabolism under a wide variety of contexts, and have repeatedly proven to be valuable for generating accurate predictions and informative hypotheses [@gu_current_2019]. An overview of GEM and its methodological framework is provided in Section \@ref(intro-gem). Here we focus on the MTA algorithm, initially developed by [@yizhak_model-based_2013], which is used for the prediction of metabolic targets whose KO can transform the cellular metabolic state from a given reference state to a given target state. Apparently, this algorithm can be used for therapeutic target prediction for many metabolism-related diseases, by reversing the perturbed cell metabolism under the diseased state back to the normal healthy state. But due to its mechanism-based modeling approach under the GEM framework, MTA can also be more widely used to predict potential causal factors and perturbations beyond what can be identified from classical statistical inference. In the original study, MTA was used to predict lifespan-extending genes in the budding yeast *Saccharomyces cerevisiae*, and successfully identified two novel lifespan-extending metabolic genes (*adh2* and *gre3*) whose KO's were experimentally validated to significantly prolong the chronological lifespan of yeast [@yizhak_model-based_2013]. In a subsequent study, MTA was used to predict metabolic cancer driver genes, resulting in a novel cancer driver gene *FUT9* in colorectal cancer [@auslander_integrated_2017]. A more recent study applied MTA and successfully predicted mitochondrial dihydroorotate dehydrogenase (DHODH) involved in pyrimidine nucleotide biosynthesis as an effective therapeutic target for an intractable epilepsy called Dravet syndrome [@styr_mitochondrial_2019]. Despite repeated successful applications, the original algorithm was mostly validated in the bacteria *E. coli*, with only a few validations in higher organisms (2 validation datasets for mouse and 2 for human); the performance in the mice and human datasets also appeared relatively weaker than those in the *E. coli* [@yizhak_model-based_2013]. A recent study introduced an improvement to MTA named robust MTA (rMTA), which was shown to achieve better performance compared to the original MTA [@valcarcel_rmta_2019]. However, in terms of validation in higher organisms, the authors of rMTA only used the same two human and two mouse datasets as in [@yizhak_model-based_2013], thus the scope of its validation is still very limited. Here I aim to perform a deeper investigation to comprehensively evaluate the performance of MTA (and rMTA) in higher organisms focusing on human, also seeking to optimize the algorithm and further improve its prediction accuracy.
 
 ## Results
 
+### The MTA algorithm as in [@yizhak_model-based_2013]
+
+Here following the introduction to GEM in Section \@ref(intro-gem), I first provide a description of the algorithm details of MTA as developed in [@yizhak_model-based_2013]. The input to MTA is the transcriptome-wide gene expression data of the reference state, in addition to the differential gene expression (DE) changes in the target state compared to the reference state, provided as two vectors; MTA outputs a score called the MTA score for each reaction, with higher MTA scores corresponding to better targets, i.e. whose KO can better transform the cell metabolism from the reference to the target state. 
+
+A first step of MTA involves applying the iMAT algorithm [@shlomi_network-based_2008] to obtain a GEM customized to the reference state. Then uniform random sampling is performed on the reference GEM, and the mean vector $\mathbf{v^{ref}}$ of all sample points is obtained as the reference metabolic flux distribution of the reference state. Up-regulated, down-regulated and stable genes are then determined from the DE results based on certain cutoffs, which are mapped based on the boolean GPR associations to the reaction level to obtain the sets of reactions that are expected to have increased activity level (i.e. absolute flux) or decrease activity level. According to [@yizhak_model-based_2013], the cutoff for determining significantly up- or down-regulated genes were partly based on considerations of computational time cost, as specifying a higher number of DE genes will increase the time to solve the MIQP optimization problem later (see below). The authors recommended picking a number of top DE genes such that they are mapped via GPR to a total of about 100 reactions that are intended to have altered activities. However this is a parameter that in principle can be further tuned. Specifically for the mapping of genes to reactions via GPR, if a reaction is expected to have increased activity level if it is catalyzed by a set of enzymes with $\&$ relations and all of the corresponding genes are up-regulated, or if it is catalyzed by a set of enzymes with $|$ relations and at least on of the corresponding genes are up-regulated; similarly reactions expected to has decreased activities are determined. All other cases not covered in the above description are regarded as undetermined. For the reactions with expected increase in activity and whose fluxes are positive in the reference state $\mathbf{v^{ref}}$, they are expected to have further increased flux value (i.e. further flux change in the forward direction, towards more positive values); similarly, for the reactions whose initial reference fluxes $v^{ref}_i$'s are negative and are expected to have decreased activity level, we expect that the absolute values of their fluxes to decrease, which also corresponds to their flux values increasing in the forward direction towards more positive values; this set of reactions is denoted $R_F$. Similarly the set of reactions whose flux value are expected to decrease (i.e. change in the backward direction, towards more negative values) can be identified and is denoted $R_B$. The set of reactions that are expected to have unchanged, stable activity levels is denoted $R_S$; any undetermined reaction is regarded as having stable flux and is also included in $R_S$. Next, a series of MIQP problems under the simulated KO of each reaction $j$ are solved to maximize the number of reactions with flux changes concordant with the expectations, while minimizing the squared sum of flux changes in reactions that are expected to have stable fluxes:
+
+$$
+\begin{aligned}
+&\minimize_{\mathbf{v,y}} \bigg( (1-\alpha)\sum_{i\in R_S}(v^{ref}_i-v_i)^2 + \frac{\alpha}{2} \sum_{i\in R_F \cup R_B }y_i \bigg)  \\
+&\text{subject to:} \\
+&\mathbf{Sv = 0} \\
+&\mathbf{v^{lb} \le v \le v^{ub}} \\
+&v_j=0 \\
+&v_i - y^F_i(v^{ref}_i + \epsilon_i) - y_i v^{lb}_i \ge 0,\; \text{for } i\in R_F \\
+&y^F_i + y_i = 1,\; i\in R_F \\
+&v_i - y^B_i(v^{ref}_i - \epsilon_i) - y_i v^{ub}_i \le 0,\; \text{for } i\in R_B \\
+&y^B_i + y_i = 1,\; i\in R_B \\
+&y_i,\, y^F_i,\, y^B_i \in \{0,1\} \\
+\end{aligned}
+$$
+
+In the formulation above, for each reaction $i\in R_F$, binary variables $y_i$ and $y^F_i$ are introduced such that one and only one of the two variables can be 1 (while the other has to be 0); similarly binary variables $y_i$ and $y^B_i$ are introduced for each reaction $i\in R_B$. $y^F_i=1$ or $y^B_i=1$ correspond to "successful" flux change that is consistent with the expected changes for reaction $i$, and thus $y_i=1$ means a failure to achieve the expected flux changes. Therefore, the integer part of the minimization problem corresponds to minimizing the number of failed flux changes. The relative weights of this part and the quadratic part (which minimizes the squared sum of flux changes in reactions that are expected to have stable fluxes) are determined by the parameter $\alpha$. In the original study [@yizhak_model-based_2013], performance was found to be robust to the variation in this parameter, and a default value of 0.66 was used in their analyses. However, the robust analysis was only performed using several validation datasets in *E. coli* and yeast. $\epsilon_i$ is a parameter that corresponds to the size of flux change used to define a "successfully" changed reaction, while it can be reaction-specific in principle, it was shown that a fixed value can achieve reasonably good performance, although again the evaluations that led to this conclusion were performed using *E. coli* and yeast datasets. A fixed value of $\epsilon_i=0.01$ was recommended as a reasonable default value (from personal correspondence with the authors).
+
+After solving the above MIQP problem for the KO of each reaction, the optimal solution is obtained and thereby the sets of "successfully" changed reactions ($R_{success}$) as well those failed to achieve the expected change ($R_{fail}$) can be identified. This is mostly straightforward although two special cases requires further explanation: for the reactions whose initial reference fluxes $v^{ref}_i$'s are negative and are expected to have decreased activity level, we expect that the absolute values of their fluxes to decrease, which corresponds to their flux values increasing towards more positive values, although it's not desired if their final flux value becomes larger than $-v^{ref}_i$. If the final flux from the optimal solution of the MIQP is larger than the corresponding $-v^{ref}_i$, although it contributed to the minimization of the MIQP objective function, it should be regarded as a failed case. Similarly this applies to reversible reactions with positive initial reference flux and an expected decrease in their activity level, but the final flux is smaller than $-v^{ref}_i$. These special "overshoot" reactions are denoted $R_{fail,overshoot}$ (and not included in the "normal" $R_{fail}$ set; the $R_{fail,overshoot}$ was not explicitly explained in the original MTA [@yizhak_model-based_2013] but was actually implemented as such). The MTA score for the KO is then computed as follows:
+
+$$
+\frac{ \sum_{i\in R_{success}}|v^{ref}_i-v^{opt}_i| - \sum_{i\in R_{fail}}|v^{ref}_i-v^{opt}_i| - \sum_{i\in R_{fail,overshoot}}\bigg| |v^{ref}_i|-|v^{opt}_i| \bigg|}{ \sum_{i\in R_S}|v^{ref}_i-v^{opt}_i| }
+$$
+
+The MIQP problem can also be solved using the WT model without any KO, which can also produce an MTA score that can be used as a control. Only reactions whose scores are greater than the control scores are potentially useful targets. Based on the validations mostly based on *E. coli* and yeast reported in [@yizhak_model-based_2013], the 10%-20% reactions with the highest MTA scores appear to represent biologically meaningful targets in that in most of the validation datasets, the reaction corresponding to the actual gene KO (after mapped to reactions via GPR associations) lies within top 10%-20% MTA predictions.
+
+### Evaluating the performance of the MTA algorithm in human datasets
+
+As described above, MTA as originally reported by [@yizhak_model-based_2013] has not been extensively tested in human. Given its many potential applications in human biology including the prediction of therapeutic targets for different human diseases, it is desirable to perform a more comprehensive evaluation of MTA using human benchmark datasets. Among the key points to evaluate is the robustness to the choice of the various parameters $\alpha$ and $\epsilon_i$, and the determination of their best default values, since the previous analyses reported in [@yizhak_model-based_2013] were mostly in *E. coli* and yeast, and the difference in the organism and its GEM, as well as the type of dataset (from different assay platforms) may influence the robustness analysis and the choice of parameters. Besides, the number of top DE genes is another parameter that can be tuned but not explored/reported in the original study [@yizhak_model-based_2013]. To this aim, I manually collected a total of 58 human microarray or RNA-seq transcriptome datasets involving the KD or KO or drug inhibition (by small molecules) of a metabolic gene/protein from the GEO database. Each dataset contains the expression profiles of the untreated or vehicle-treated control samples and those of the treated (i.e. KO/KD/drug inhibition) samples. The GEO dataset IDs of the collected datasets are provided in Appendix Table \@ref(tab:mta-datasets). I applied MTA to each of the datasets, with the gene expression profiles of the control and treated groups as inputs, and subsequently inspected MTA score(s) and percentage rank(s) across all reactions of the "ground truth" reaction(s), i.e. the reaction(s) mapped via the GPR to the actual gene or protein being KO-ed/KD-ed/inhibited. When more than one reaction is mapped, I focused on the top ranked reaction according to MTA prediction. The effects of the parameters $\alpha$ and $\epsilon_i$, as well as the number of top DE genes (which I denoted $n$) on the performance are all thoroughly investigated with grid search. $\alpha$ values ranging from 0.02 to 0.98, $\epsilon_i$ values ranging from 1e-4 to 0.1, and $n$ ranging from 10 to 500 were tested.
+
+Evaluating the prediction accuracy of MTA in the 58 human datasets, I found that indeed the performance of MTA is highly dependent on the parameters chosen (Figure \@ref(fig:mta-mta-pars)). As a crude measure, I evaluated the performance based on the number of datasets (out of the 58) where at least one ground truth reactions is among the top 10% MTA predictions. Overall, the number of top DE genes $n$ used appeared to have a larger effect on the performance, with lower values of $n$ below 100 producing markedly better performance than higher $n$ values. $\alpha$ values also had a large effect, with $\alpha$ in the very high range producing noticeably better performance. Different $\alpha$ values appeared to work relatively better with specific ranges of $\epsilon_i$ values, with a weak trend of higher $\alpha$ values working better with higher $\epsilon_i$ values. Overall the best performance was achieved at $\alpha=0.98$, $\epsilon_i=0.05$ and $n=40$, where 29 out of the 58 datasets have their ground truths predicted among the top 10%. Specifically inspecting this optimal parameter combination, 23 out of the 58 datasets have "better than top 5%" performance, and 3 datasets have "better than top 1%" performance. The performances vary given local variation in the parameter near this optimal region, but in general yielding the "better than top 10%" performance in more than 20 datasets (Figure \@ref(fig:mta-mta-pars)).
+
+```{r mta-mta-pars, fig.cap="Evaluation of the prediction performance of MTA on 58 human datasets using different parameters.", fig.width=5, fig.height=7}
+load("data/mta/mta.params.check.res.RData")
+
+colf <- colorRamp2(c(5,15,30), c("grey95","orange","red"))
+tmpf <- function(i) {
+  mat <- summ.cnt[[i]][6:1,]
+  hm <- Heatmap(mat, 
+        name="#datasets\n ground truth\n among top 10%",
+        row_title=sprintf("alpha=%s\n\n epsilon",i),
+        row_names_side="left",
+        cluster_rows=FALSE,
+        column_title=NULL,
+        column_title_side="bottom",
+        column_names_side="bottom",
+        cluster_columns=FALSE,
+        col=colf,
+        cell_fun=function(j, i, x, y, width, height, fill) grid.text(sprintf("%d", mat[i,j]), x, y, gp=gpar(fontsize=10))
+        )
+}
+
+hm <- tmpf(names(summ.cnt)[length(summ.cnt)])
+for (i in rev(names(summ.cnt)[-length(summ.cnt)])) {
+  hm <- hm %v% tmpf(i)
+}
+
+draw(hm, column_title="n", column_title_side="bottom")
+```
+
+### First proposed alternative to the original MTA and its evaluation
+
+One perceived drawback of the original MTA algorithm is that the objective function involves the maximization of the number of reactions that are intended to be altered, while minimizing the summed square of flux differences of the reactions that are intended to remain stable. This leads to a MIQP problem that can be difficult and time-consuming to solve. Besides, the maximization part and the minimization part of the optimization have intrinsically different biological meaning and are on different scales, thus they need to be balanced by the parameter $\alpha$. Further, the definition of "significant" alteration of a reaction flux is determined by the $\epsilon_i$ parameter. As shown above, the number of top DE genes is also a parameter that can greatly affect the performance. It could be desirable to reduce the number of parameters with an alternative formulation, if reasonable performance can be retained. The original MTA formulation introduce the further complexity that the KO's were ultimately evaluated based on yet another fraction scoring function different from the MIQP objective function. The authors argued that the scoring function cannot be optimized with off-the-shelf techniques due to its non-linear fraction form, but also due to that the calculation is dependent on the knowledge of whether a reaction is "successfully" altered as intended or not [@yizhak_model-based_2013]. However, it could be possible to explore the use of a linear scoring function instead of one in fraction form, that is also independent of any prior knowledge on whether a reaction is actually successfully changed.
+
+With the aim of addressing the above drawbacks of the original MTA, I explored an alternative formulation for the same biological prediction problem with the same input. Instead of maximizing of the number of reactions that are intended to be altered, I seek to maximize the total absolute flux changes in these reactions; similarly instead of minimizing the summed square of flux differences of the reactions that are intended to remain stable, I seek to minimize their total absolute flux changes. This leads to an optimization problem involving absolute values that can be transformed into a simple LP problem, which eliminates the need for any additional parameter and a second scoring function. This new formulation is as follows:
+
+$$
+\begin{aligned}
+&\minimize_{\mathbf{v}} \frac{(1-\alpha)}{|R_S|} \sum_{i \in R_S}{|v_i-v_i^{ref}|} + \\
+&\frac{\alpha}{|R_{rr} \cup R_B \cup R_F|} \bigg( \sum_{i \in R_{rr}}{(|v_i|-|v_i^{ref}|)} + \sum_{i \in R_B}{(v_i-v_i^{ref})} + \sum_{i \in R_F}{(v_i^{ref}-v_i)} \bigg) \\
+&\text{subject to:} \\
+&\mathbf{Sv = 0} \\
+&\mathbf{v^{lb} \le v \le v^{ub}} \\
+&v_j=0 \\
+\end{aligned}
+$$
+
+Here the definition of the $R_S$ is the same as that in the original MTA. $R_{rr}$ denotes the set of reactions that are reversible and are expected to have reduced activity levels, i.e. a decreased in the absolute values of their fluxes. The $R_F$ and $R_B$ sets of reactions are also defined in the same way as in the original MTA except that the reactions in $R_{rr}$ are excluded from these sets. Thus it can be seen that this formulation has the additional benefit of addressing the potential "overshoot" cases directly within the objective function, rather than adjusting for it in a *post hoc* fashion. The flux changes associated with the reactions that are expected to remain steady ($R_S$) and the rest of the reactions that are expected to have altered activities ($R_{rr} \cup R_B \cup R_F$) are normalized by the sizes of these two sets of reactions, respectively. Besides, analogous to the original MTA, the relative weights of these two parts can be further adjusted using the $\alpha$ parameter. However, given that now both parts have the same biological meaning (i.e. flux change) and are thus on the same numerical scale, $\alpha=0.5$ is a very natural choice as the default value. This optimization can be transformed to the equivalent LP problem below by introducing an additional pair of variables $p_i$ and $n_i$ for each reaction in $R_S$ and $R_{rr}$:
+
+$$
+\begin{aligned}
+&\minimize_{\mathbf{v}} \frac{(1-\alpha)}{|R_S|} \sum_{i \in R_S}{(p_i+n_i)} + \\
+&\frac{\alpha}{|R_{rr} \cup R_B \cup R_F|} \bigg( \sum_{i \in R_{rr}}{(p_i+n_i)} + \sum_{i \in R_B}{v_i} - \sum_{i \in R_F}{v_i} \bigg)\\
+&\text{subject to:} \\
+&\mathbf{Sv = 0} \\
+&\mathbf{v^{lb} \le v \le v^{ub}} \\
+&v_j=0 \\
+&p_i - n_i = v_i - v^{ref}_i,\; \text{for } i \in R_S \\
+&p_i - n_i = v_i,\; \text{for } i \in R_{rr} \\
+&p_i,\, n_i \ge 0 \\
+\end{aligned}
+$$
+
+```{r}
+metal <- new.env()
+load("data/mta/rmetal.check.res.RData", envir=metal)
+```
+
+Given that this formulation is an LP problem, I termed it MeTAL. The prediction performance of MeTAL was again evaluated on the same 58 validation datasets, with different choices of parameters. The major parameter is $n$, the number of top DE genes. Although the $\alpha$ parameter has a natural default value as described above, I still explored how the performance can vary dependent on it. Here it was found that MeTAL overall had worse performance compared to the original MTA, unfortunately (Figure \@ref(fig:mta-metal-pars)). Like in MTA, larger $\alpha$ appeared to yield relatively better performances, although the natural default of $\alpha=0.5$ is indeed a good choice. Global variation in the performance due to the choice of $n$ appeared to be smaller compared to MTA, although there are some local instabilities. The best performance is achieved by the combination $\alpha=0.5$ and $n=140$, successfully predicting the "ground truth" reaction among the top 10% in 21 out of the 58 datasets. Although this is still largely better than random (binomial test P=`r binom.test(sum(metal$res["metal.1","0.5","140",]<0.1), length(metal$res["metal.1","0.5","140",]), 0.1)$p.value`), it is worse than the best-case performance of MTA. However, this performance is not statistically different from the MTA performance when tested with a Wilcoxon signed-rank test (P=`r wilcox.test(metal$res["metal.1","0.5","140",], res["0.05","0.98","40",], paired=TRUE)$p.value`). Upon closer inspection this appears to be due to that there exist cases where MeTAL was giving good predictions while MTA did not, and also among the cases where both MTA and MeTAL gave better than top 10% performance, the ground truth reaction was ranked higher by MeTAL than MTA. In total 34 out of the 58 datasets can have their ground truth reactions predicted among the top 10% in either MTA or MeTAL. Therefore, it appears that further efforts should seek to combine MTA and MeTAL in an informed manner to achieve even better prediction performances.
+
+```{r mta-metal-pars, fig.cap="Evaluation of the prediction performance of MeTAL on 58 human datasets using different parameters.", fig.width=5, fig.height=2}
+mat <- metal$summ.cnt$metal.1[5:1,]
+colf <- colorRamp2(c(5,15,30), c("grey95","orange","red"))
+Heatmap(mat, 
+        col=colf,
+        name="#datasets\n ground truth\n among top 10%",
+        row_title="alpha",
+        row_names_side="left",
+        cluster_rows=FALSE,
+        column_title="n",
+        column_title_side="bottom",
+        column_names_side="bottom",
+        cluster_columns=FALSE,
+        cell_fun=function(j, i, x, y, width, height, fill) grid.text(sprintf("%d", mat[i,j]), x, y, gp=gpar(fontsize=10))
+)
+```
+
+### Second proposed alternative to the original MTA and its evaluation
+
+Another potential issue in the design of the original MTA is a more biologically informed one. Specifically, the original MTA essentially evaluates the capacity of a reaction KO in allowing or supporting the transformation in the desired direction. Nevertheless, there is no guarantee that the system will actually shift in the specific desired direction upon the reaction KO. In theory, it is possible that the same KO can support the transformation in another independent direction equally well, or even better, but MTA does not assess the capacity of the KO model in supporting the transformation in any other arbitrary and irrelevant direction. In other words, the MTA prediction does not consider the specificity of the KO in terms of realizing the desired transformation, and therefore in theory a reaction KO with a high MTA score is not necessarily a good candidate for realizing the desired transformation. This same issue also applies to the MeTAL method as described above. To address this issue, conceptually we can run MTA (or MeTAL) repeatedly using different random transformations (i.e. random sets of $R_S$, $R_F$, and $R_B$ reactions) for each reaction KO, then compare the resulting distribution of MTA scores (or optimal MeTAL objective function values) to that obtained using the actual desired transformation. However, to reduce the computational burden, a most simple approach is to only run an additional MTA (or MeTAL) for each KO using the opposite transformation as desired. Specifically, after mapping DE results via APR to intended directions of changes in the activity levels of the reactions, reverse the directions before using them to define the $R_F$, $R_B$, and $R_{rr}$ (for MeTAL only) reaction sets. The $R_S$ set should remain the same. Then the final "corrected" MTA score (or MeTAL objective function value) is the value obtained from the desired transformation minus that obtained from the opposite transformation. I termed this modified procedure mMTA for "multiple" MTA, or mMeTAL when applied to MeTAL.
+
+Next, evaluating the performance of mMTA and mMeTAL on the 58 validation datasets, I found that both mMTA and mMeTAL showed large improvement compared to MTA and MeTAL, respectively. In particular, mMeTAL showed drastic improvement in performance compared to MeTAL, with improvement in almost all parameter combinations tested (Figure \@ref(fig:mta-mmetal-pars)), in the best case recovering the ground truth among top 10% predictions in 34 datasets. 
+
+```{r mta-mmetal-pars, fig.cap="Evaluation of the prediction performance of mMeTAL on 58 human datasets using different parameters.", fig.width=5, fig.height=2}
+mat <- metal$summ.cnt$mmetal.1[5:1,]
+colf <- colorRamp2(c(5,15,30), c("grey95","orange","red"))
+Heatmap(mat, 
+        col=colf,
+        name="#datasets\n ground truth\n among top 10%",
+        row_title="alpha",
+        row_names_side="left",
+        cluster_rows=FALSE,
+        column_title="n",
+        column_title_side="bottom",
+        column_names_side="bottom",
+        cluster_columns=FALSE,
+        cell_fun=function(j, i, x, y, width, height, fill) grid.text(sprintf("%d", mat[i,j]), x, y, gp=gpar(fontsize=10))
+)
+```
+
+### Comparison with the rMTA algorithm and a benchmark of all MTA variants
+
+During my effort in evaluating and improving the original MTA algorithm, [@valcarcel_rmta_2019] published another MTA improvement which they termed rMTA (for "robust MTA") and showed that it has better predictive accuracy than the original MTA from [@yizhak_model-based_2013]. However, their validations were also restricted to mostly *E. coli* datasets, making it necessary to comprehensively benchmark all different MTA variants with the human datasets I collected. rMTA is based on exactly the same idea of mMTA in addressing the specificity of the KO in terms of realizing the desired transformation, where the original MTA is run twice, one in the desired direction of transformation and the other in the opposite direction, resulting in two MTA scores which they termed $bTS$ and $wTS$ for "best transformation score" and "worse transformation score", respectively. Then instead of simply using $bTS - wTS$ as the final score, they compared $bTS$ and $wTS$ in a more refined manner. Specifically, they reasoned that only when a KO has $bTS>0$ and $wTS<0$ can we be certain that the KO is a good candidate, and all the other cases should be regarded as unresolved In these unresolved cases, they proposed to use an independent MOMA-based algorithm to determine the capacity of the KO to realize the desired transformation. As described in Section \@ref(intro-gem-algo), MOMA [@segre_analysis_2002] is an algorithm to predict the flux distribution after a metabolic reaction KO based on the assumption of minimal metabolic adjustment, i.e. the system will prefer to adapt to the new, more constraint feasible metabolic space under the KO by making only the smallest metabolic adjustment possible. Accordingly, MOMA predicts the flux distribution post-KO by minimizing the euclidean distance between the post-KO flux vector to that of the wildtype (WT) or starting condition. Adapted to this setting, the starting condition is defined by the $\mathbf{v^{ref}}$ vector, and the MOMA optimization is as follows:
+
+$$
+\begin{aligned}
+&\minimize_{\mathbf{v}} ||\mathbf{v}-\mathbf{v^{ref}}||_2^2 \\
+&\text{subject to:} \\
+&\mathbf{Sv = 0} \\
+&\mathbf{v^{lb} \le v \le v^{ub}} \\
+&v_{j} = 0
+\end{aligned}
+$$
+
+Then an MTA score corresponding to the MOMA optimal solution is computed in the same way as in the original MTA, this score was termed $mTS$ for "MOMA transformation score", and was used for the unresolved cases as the final score. Besides, to ensure that the resolved cases will get higher final scores to reflect the high confidence levels associated with those predictions, MOMA was also performed for these resolved cases and the final score for these resolved cases is computed as $k\centerdot mTS \centerdot (bTS-wTS)$ where $k$ is a fixed large number such as 100 (according to the authors of [@valcarcel_rmta_2019]) to ensure that these resolved reaction KO's get higher scores.
+
+I next comprehensively evaluated rMTA on the 58 human datasets I collected, and compared it to all the other MTA variants. Consistent with the claimed superior performance, rMTA indeed showed the best predictive accuracy that far exceeded the other algorithms, successfully predicting the "ground truth" reaction among top 10% predictions in as many as 34 out of the 58 datasets. Surprisingly, the rMTA performance was not seen to be affected at all by the change in the MTA parameters $\alpha$ and $\epsilon_i$. Since in rMTA, the score from MOMA is independent of these MTA parameters and only dependent on the number of top DE genes ($n$), this suggests that the improved performance of rMTA can be completely attributed to the adoption of the independent MOMA algorithm. I therefore evaluated the predictive performance of the MOMA algorithm, i.e. based on the $mTS$ score alone. Indeed, MOMA achieved identical performance to rMTA. This suggests that the improvement of rMTA is largely due to the adoption of MOMA in its pipeline. This was not pointed out by the authors of rMTA [@valcarcel_rmta_2019] and not demonstrated in their testing. Here based on a large collection of 58 datasets, the benchmark results do indicate that the performance of rMTA and MOMA is indistinguishable (Figure \@ref(fig:mta-rmta-vs-moma)).
+
+```{r mta-rmta-vs-moma, fig.cap="Evaluation of the prediction performance of rMTA and MOMA on 58 human datasets using different parameters.", fig.width=5, fig.height=2}
+mat <- metal$summ.cnt$moma[5:1,]
+colf <- colorRamp2(c(5,15,30), c("grey95","orange","red"))
+Heatmap(mat, 
+        col=colf,
+        name="#datasets\n ground truth\n among top 10%",
+        row_title="alpha",
+        row_names_side="left",
+        cluster_rows=FALSE,
+        column_title="n",
+        column_title_side="bottom",
+        column_names_side="bottom",
+        cluster_columns=FALSE,
+        cell_fun=function(j, i, x, y, width, height, fill) grid.text(sprintf("%d", mat[i,j]), x, y, gp=gpar(fontsize=10))
+)
+```
+
+From the MOMA results, we see that it produced the best performance when only the very few top DE genes (i.e. $n=10$) were picked. Therefore the predictions were driven by top DE genes. When further assigning higher weight to the top changes by scoring the MOMA solution using the MeTAL objective function, while setting high $\alpha$ values, the best-case prediction performance is increased even further (36/58 datasets have ground truth within top 10% predictions; Figure \@ref(fig:mta-moma-pars)). These observations raise two important questions: 1. how well the ground truth genes (i.e. the actual genes being KO/KD-ed or proteins being inhibited) can be directly predicted from the DE results, how does it compare to the metabolic modeling-based predictions, and whether the latter approach provides additional value; 2. whether the performances exhibited by the different MTA variants, especially rMTA/MOMA, were completely attributed to that the ground truth genes are among the top DE genes used as input to these metabolic modeling algorithms.
+
+```{r mta-moma-pars, fig.cap="Evaluation of the prediction performance of MOMA on 58 human datasets using the MeTAL objective function with different parameter values.", fig.width=5, fig.height=2}
+mat <- metal$summ.cnt$moma.1[5:1,]
+colf <- colorRamp2(c(5,15,30), c("grey95","orange","red"))
+Heatmap(mat, 
+        col=colf,
+        name="#datasets\n ground truth\n among top 10%",
+        row_title="alpha",
+        row_names_side="left",
+        cluster_rows=FALSE,
+        column_title="n",
+        column_title_side="bottom",
+        column_names_side="bottom",
+        cluster_columns=FALSE,
+        cell_fun=function(j, i, x, y, width, height, fill) grid.text(sprintf("%d", mat[i,j]), x, y, gp=gpar(fontsize=10))
+)
+```
+
+To investigate the first question, I examined the percentage ranks (by DE log fold-change values) of the ground truth genes in each dataset, among only the metabolic genes present in the GEM to ensure comparability to the prediction performances obtained from the modeling algorithms. I found that in 49 out of the 58 datasets, the ground truth genes are actually among the top 10% metabolic DE genes. This number of much higher than that achieved by the various metabolic modeling-based algorithms. However, for the other 9 datasets where the ground truth gene is not among the top 10% metabolic DE genes (it happened that in these datasets the ground truth genes are all ranked >20% by DE log fold-change), the various MTA variants can successfully recover the ground truth among the top 10% or even top 5% predictions in as many as 6 out of the 9 datasets (Appendix Figure \@ref(fig:mta-de-gt-20)). This suggests that the modeling-based approach can identify the true perturbed gene/reaction in cases where the DE results do not provide direct clue on the ground truth, and it is in these cases that the modeling-based approach is a valuable complement to the DE-based analysis.
+
+To investigate the second question, I performed control analysis where the ground truth gene was removed from the DE result given as the input to the various MTA variants, so that the modeling algorithms cannot directly rely on the information of the change in the ground truth gene/reaction. In this analysis, the performance of all algorithms decreased. In the optimal parameter setting, both MOMA and mMeTAL showed "better than top 10%" performance in 23 datasets (Appendix Figure \@ref(fig:mta-de-rm-ctrl)). This suggests that in many datasets, the accurate prediction is dependent on the ground truth gene present among the top DE genes passed to the metabolic modeling algorithms, although this is not needed for the algorithms to make successful predictions in still a significant number of datasets.
 
 ## Materials and Methods
 
+### Validation datasets
+
+A total of 58 human transcriptome datasets involving the KD or KO or drug (small molecule) inhibition of a metabolic gene/protein were manually collected from the GEO database, starting with search by keywords include "knockout", "knockdown", "inhibition", "antagonist" and the name or symbol of a metabolic gene (obtained from the human GEM Recon 1 [@duarte_global_2007] and Recon 3D [@brunk_recon3d_2018]). These datasets span different transcriptome profiling platforms including different microarrays and bulk RNA-seq. Each dataset contains the expression profiles of the untreated or vehicle-treated control samples and those of the treated (i.e. KO/KD/drug inhibition) samples. The detailed information on the collected datasets are provided in Table \@ref(tab:mta-datasets).
+
+### Generating the common inputs to different MTA algorithms
+
+For each dataset, DE analysis between the treated and control samples were performed. The edgeR package [@robinson_edger_2010] was used for RNA-seq datasets and the limma package [@ritchie_limma_2015] with LOESS normalization was used for microarray datasets. log2-transformed TPM values (for RNA-seq datasets) or log2-transformed LOESS-normalized expression values (for microarray datasets) of the control samples (usually <5 replicates) were averaged across samples (i.e. arithmetic mean) and used as the representative gene expression profile of the control group. This is passed as the input to iMAT algorithm [@shlomi_network-based_2008] together with the base human GEM Recon 1 [@duarte_global_2007], which produces a customized model of the input samples. ACHR is then used to uniformly sample the resulting model until convergence by visual inspection (this usually involves the sampling of up to 1e4 sample points or more in rare cases for Recon 1). The sample (arithmetic) mean was then computed to obtain the flux vector of all metabolic reactions in the model representative of the control condition. This flux vector as well as the DE results of treated vs control samples for each validation dataset were used as the common inputs to the different MTA algorithms described in the text above.
+
+### Implementation of the different MTA algorithms
+
+The mathematical details of each of the algorithms were described in the text above. All algorithms were implemented in R version 3.6.3 using our in-house R package named gembox developed by me, with the academic version of IBM ILOG CPLEX Optimization Studio 12.10 as the optimization solver.
+
+### Evaluation and comparison of the different MTA algorithms
+
+For each validation dataset, the true metabolic gene being KO-ed/KD-ed (or proteins being inhibited) was mapped to metabolic reaction(s) (termed "ground truth" reactions). The different algorithms were evaluated based on whether they were able to successfully recover at least one of the mapped "ground truth" reactions among the top 10%-20% predictions across all metabolic reactions. The performance of different algorithms were compared by their predicted percentage ranks of the "ground truth" reactions across validation datasets. In cases where the gene/protein is mapped to multiple "ground truth" reactions, the percentage rank of the reaction that ranked top (i.e. highest MTA score, lowest rank value) was used.
+
 ### Softwares and code
 
-R version 3.6.3 was used for all statistical tests. P values lesser than 2.22e-16 may not be computed accurately and are reported as “P<2.22e-16”. The Benjamini-Hochberg (BH) method was used for P value adjustment. The R packages ggplot2 (Wickham 2016) and ComplexHeatmap (Gu et al. 2016) were used to create the visualizations. Implementation of the new MTA algorithm can be found in the GitHub repository: https://github.com/ruppinlab/gembox.
+R version 3.6.3 was used for all statistical tests. P values lesser than 2.22e-16 may not be computed accurately and are reported as "P<2.22e-16". The Benjamini-Hochberg (BH) method was used for P value adjustment. The R packages ggplot2 [@wickham_ggplot2_2009] was used to create the visualizations. Implementation of the new MTA algorithm can be found in the GitHub repository: https://github.com/ruppinlab/gembox.
 
 ## Discussion and Conclusion
 
+In this chapter, I described my efforts in comprehensively validate the original MTA algorithm [@yizhak_model-based_2013] in a large collection of human datasets, while trying to develop improved algorithms for the same problem of predicting metabolic KO's that facilitate a specific metabolic transformation. Such a problem is broadly present, for example, in the prediction of therapeutic target for many metabolism-related diseases, and in the identification of causal metabolic factors underlying the difference between two biological conditions. Many such applications are in the context of human biology and medicine, and thus the development and evaluation of improved MTA algorithm specifically with human data can be highly valuable.
+
+The original MTA method involves solving a series of MIQP problems which require the specification of multiple parameters, notably $\alpha$ for balancing the integer and quadratic parts of the optimization, and $\epsilon_i$ for defining altered reaction fluxes. Although default parameters showed to produce reasonable performances were recommended in [@yizhak_model-based_2013], they were based on relatively limited testing and validation on mostly simpler organisms like *E. coli* and yeast. It can be expected that the optimal choice of these parameters may be dependent on the organism (i.e. GEM used) and the dataset. This indeed appeared to be the case during the validation with the 58 human datasets I collected, where the prediction performance was seen to vary a lot depending on the choice of parameters, and the optimal parameter combination obtained via a grid search procedure show deviation compared to the default values recommended in [@yizhak_model-based_2013]. With the validation datasets where the ground truths are known, it is possible to fine-tune the algorithm parameters, but in real datasets and application cases, the tuning can be challenging due to the lack of ground truths. Therefore, an alternative MTA formulation with minimal parameterization, or robustness with regard to the choice of parameter can be desirable. Accordingly, I formulated the MeTAL, an efficient LP version for the same prediction problem as in MTA that does not include the $\epsilon_i$ parameter and with a natural default choice for the $\alpha$ parameter. MeTAL also properly handles the "overshoot" reactions within the objective function and does not require a subsequent rescoring procedure using the optimal solution like in the original MTA, thus without the issue of degenerate solutions. Unfortunately, MeTAL showed weaker prediction performance compared to MTA, although it appeared to be complementary to MTA in some datasets. MeTAL and MTA share the issue of lack of specificity in measuring the KO of a reaction to facilitate exactly the intended direction of transformation. Since they only consider the single direction corresponding to the intended transformation, the resulting scoring cannot reflect whether a KO can indeed result in the intended transformation (but not, say, another random transformation). After taking this into consideration with a very minor modification of the prediction pipeline using essentially the same algorithm, both mMTA and mMeTAL show improved performance, although at the cost of doubling of computation time. Fortunately, the LP problem in mMeTAL is very efficient to solve compared to the MIQP problem of MTA, making mMeTAL a very feasible algorithm.
+
+Further, with the more comprehensive human-based validation, I confirmed that the new rMTA algorithm [@valcarcel_rmta_2019] showed robust and stronger performance than the other MTA variants, although mMeTAL achieved equivalent performance with the best parameter. Surprisingly, the superior performance of rMTA was not due to the methodical pipeline involving an mMTA-like procedure, but can be mostly attributed to the adoption of MOMA. Since MOMA directly predicts the likely flux distribution after a reaction KO, it elegantly avoids the need to consider non-specific transformations. Besides, MOMA doesn't contain any additional parameter. The prediction performance of MOMA alone is equivalent to rMTA.
+
+Driven by the observation that restricting the number of top DE genes passed to the metabolic modeling algorithm, as well as assigning higher relative weight to the reactions that are intended to be changed (i.e. $R_F$, $R_B$, and $R_{rr}$) resulted in better prediction performance of many of the algorithms described, it was further investigated to what extent the performances of the algorithms were attributed to the ground truth gene being among the top DE genes. I found that although in many datasets, this is required for the achieving good prediction performance, it is not necessary for a significant number of cases -- with the metabolic modeling approach, the ground truth gene/reaction can be recovered in many cases where the gene is not a top DE gene among the metabolic genes. Therefore the metabolic modeling approach can be a valuable complement to the DE analysis in identifying the relevant targets or causal genes/reactions.
+
+Based on the benchmark results, rMTA, MOMA showed equally well performance. Although given the optimal parameter, mMeTAL also yielded the same performance in term of the number of datasets where the ground truth reaction is among the top 10% predictions, MOMA has no parameter to specify or tune other than the number of top DE genes, and its QP optimization problem only needs to be solved once. Therefore MOMA can be used as an effective algorithm for the metabolic transformation problem. In the subsequent chapters, I will demonstrate the application of MOMA as an effective "metabolic transformation algorithm" to different contexts, showing that it can help to generate useful biological insights as well as promising candidate therapeutic targets for diseases. I will use "MTA" to refer to the algorithm for the metabolic transformation problem in general, but also the MOMA version as one such algorithm with validated good performance in human.
 
