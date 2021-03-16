@@ -3,6 +3,7 @@ library(my.utils)
 library(gembox)
 library(ComplexHeatmap)
 library(circlize)
+library(RColorBrewer)
 ```
 
 
@@ -49,14 +50,16 @@ The MIQP problem can also be solved using the WT model without any KO, which can
 
 As described above, MTA as originally reported by [@yizhak_model-based_2013] has not been extensively tested in human. Given its many potential applications in human biology including the prediction of therapeutic targets for different human diseases, it is desirable to perform a more comprehensive evaluation of MTA using human benchmark datasets. Among the key points to evaluate is the robustness to the choice of the various parameters $\alpha$ and $\epsilon_i$, and the determination of their best default values, since the previous analyses reported in [@yizhak_model-based_2013] were mostly in *E. coli* and yeast, and the difference in the organism and its GEM, as well as the type of dataset (from different assay platforms) may influence the robustness analysis and the choice of parameters. Besides, the number of top DE genes is another parameter that can be tuned but not explored/reported in the original study [@yizhak_model-based_2013]. To this aim, I manually collected a total of 58 human microarray or RNA-seq transcriptome datasets involving the KD or KO or drug inhibition (by small molecules) of a metabolic gene/protein from the GEO database. Each dataset contains the expression profiles of the untreated or vehicle-treated control samples and those of the treated (i.e. KO/KD/drug inhibition) samples. The GEO dataset IDs of the collected datasets are provided in Appendix Table \@ref(tab:mta-datasets). I applied MTA to each of the datasets, with the gene expression profiles of the control and treated groups as inputs, and subsequently inspected MTA score(s) and percentage rank(s) across all reactions of the "ground truth" reaction(s), i.e. the reaction(s) mapped via the GPR to the actual gene or protein being KO-ed/KD-ed/inhibited. When more than one reaction is mapped, I focused on the top ranked reaction according to MTA prediction. The effects of the parameters $\alpha$ and $\epsilon_i$, as well as the number of top DE genes (which I denoted $n$) on the performance are all thoroughly investigated with grid search. $\alpha$ values ranging from 0.02 to 0.98, $\epsilon_i$ values ranging from 1e-4 to 0.1, and $n$ ranging from 10 to 500 were tested.
 
-Evaluating the prediction accuracy of MTA in the 58 human datasets, I found that indeed the performance of MTA is highly dependent on the parameters chosen (Figure \@ref(fig:mta-mta-pars)). As a crude measure, I evaluated the performance based on the number of datasets (out of the 58) where at least one ground truth reactions is among the top 10% MTA predictions. Overall, the number of top DE genes $n$ used appeared to have a larger effect on the performance, with lower values of $n$ below 100 producing markedly better performance than higher $n$ values. $\alpha$ values also had a large effect, with $\alpha$ in the very high range producing noticeably better performance. Different $\alpha$ values appeared to work relatively better with specific ranges of $\epsilon_i$ values, with a weak trend of higher $\alpha$ values working better with higher $\epsilon_i$ values. Overall the best performance was achieved at $\alpha=0.98$, $\epsilon_i=0.05$ and $n=40$, where 29 out of the 58 datasets have their ground truths predicted among the top 10%. Specifically inspecting this optimal parameter combination, 23 out of the 58 datasets have "better than top 5%" performance, and 3 datasets have "better than top 1%" performance. The performances vary given local variation in the parameter near this optimal region, but in general yielding the "better than top 10%" performance in more than 20 datasets (Figure \@ref(fig:mta-mta-pars)).
+Evaluating the prediction accuracy of MTA in the 58 human datasets, I found that indeed the performance of MTA is highly dependent on the parameters chosen (Figure \@ref(fig:mta-mta-pars)). As a crude measure, I evaluated the performance based on the number of datasets (out of the 58) where at least one ground truth reactions is among the top 10% MTA predictions. Overall, the number of top DE genes $n$ used appeared to have a larger effect on the performance, with lower values of $n$ below 100 producing markedly better performance than higher $n$ values. $\alpha$ values also had a large effect, with $\alpha$ in the very high range producing noticeably better performance. Different $\alpha$ values appeared to work relatively better with specific ranges of $\epsilon_i$ values, with a weak trend of higher $\alpha$ values working better with higher $\epsilon_i$ values. Overall the best performance was achieved at $\alpha=0.98$, $\epsilon_i=0.05$ and $n=40$, where 28 out of the 58 datasets have their ground truths predicted among the top 10%. Specifically inspecting this optimal parameter combination, 23 out of the 58 datasets have "better than top 5%" performance, and 3 datasets have "better than top 1%" performance. The performances vary given local variation in the parameter near this optimal region, but in general yielding the "better than top 10%" performance in more than 20 datasets (Figure \@ref(fig:mta-mta-pars)).
 
 ```{r mta-mta-pars, fig.cap="Evaluation of the prediction performance of MTA on 58 human datasets using different parameters.", fig.width=5, fig.height=7}
-load("data/mta/mta.params.check.res.RData")
+#load("data/mta/mta.params.check.res.RData")
+rmta <- new.env()
+load("data/mta/rmta.check.res.RData", envir=rmta)
 
 colf <- colorRamp2(c(5,15,30), c("grey95","orange","red"))
 tmpf <- function(i) {
-  mat <- summ.cnt[[i]][6:1,]
+  mat <- rmta$summ.cnt$mta[[i]][6:1,]
   hm <- Heatmap(mat, 
         name="#datasets\n ground truth\n among top 10%",
         row_title=sprintf("alpha=%s\n\n epsilon",i),
@@ -71,8 +74,8 @@ tmpf <- function(i) {
         )
 }
 
-hm <- tmpf(names(summ.cnt)[length(summ.cnt)])
-for (i in rev(names(summ.cnt)[-length(summ.cnt)])) {
+hm <- tmpf(names(rmta$summ.cnt$mta)[length(rmta$summ.cnt$mta)])
+for (i in rev(names(rmta$summ.cnt$mta)[-length(rmta$summ.cnt$mta)])) {
   hm <- hm %v% tmpf(i)
 }
 
@@ -117,7 +120,7 @@ metal <- new.env()
 load("data/mta/rmetal.check.res.RData", envir=metal)
 ```
 
-Given that this formulation is an LP problem, I termed it MeTAL. The prediction performance of MeTAL was again evaluated on the same 58 validation datasets, with different choices of parameters. The major parameter is $n$, the number of top DE genes. Although the $\alpha$ parameter has a natural default value as described above, I still explored how the performance can vary dependent on it. Here it was found that MeTAL overall had worse performance compared to the original MTA, unfortunately (Figure \@ref(fig:mta-metal-pars)). Like in MTA, larger $\alpha$ appeared to yield relatively better performances, although the natural default of $\alpha=0.5$ is indeed a good choice. Global variation in the performance due to the choice of $n$ appeared to be smaller compared to MTA, although there are some local instabilities. The best performance is achieved by the combination $\alpha=0.5$ and $n=140$, successfully predicting the "ground truth" reaction among the top 10% in 21 out of the 58 datasets. Although this is still largely better than random (binomial test P=`r binom.test(sum(metal$res["metal.1","0.5","140",]<0.1), length(metal$res["metal.1","0.5","140",]), 0.1)$p.value`), it is worse than the best-case performance of MTA. However, this performance is not statistically different from the MTA performance when tested with a Wilcoxon signed-rank test (P=`r wilcox.test(metal$res["metal.1","0.5","140",], res["0.05","0.98","40",], paired=TRUE)$p.value`). Upon closer inspection this appears to be due to that there exist cases where MeTAL was giving good predictions while MTA did not, and also among the cases where both MTA and MeTAL gave better than top 10% performance, the ground truth reaction was ranked higher by MeTAL than MTA. In total 34 out of the 58 datasets can have their ground truth reactions predicted among the top 10% in either MTA or MeTAL. Therefore, it appears that further efforts should seek to combine MTA and MeTAL in an informed manner to achieve even better prediction performances.
+Given that this formulation is an LP problem, I termed it MeTAL. The prediction performance of MeTAL was again evaluated on the same 58 validation datasets, with different choices of parameters. The major parameter is $n$, the number of top DE genes. Although the $\alpha$ parameter has a natural default value as described above, I still explored how the performance can vary dependent on it. Here it was found that MeTAL overall had worse performance compared to the original MTA, unfortunately (Figure \@ref(fig:mta-metal-pars)). Like in MTA, larger $\alpha$ appeared to yield relatively better performances, although the natural default of $\alpha=0.5$ is indeed a good choice. Global variation in the performance due to the choice of $n$ appeared to be smaller compared to MTA, although there are some local instabilities. The best performance is achieved by the combination $\alpha=0.5$ and $n=140$, successfully predicting the "ground truth" reaction among the top 10% in 21 out of the 58 datasets. Although this is still largely better than random (binomial test P=`r binom.test(sum(metal$res["metal.1","0.5","140",]<0.1), length(metal$res["metal.1","0.5","140",]), 0.1)$p.value`), it is worse than the best-case performance of MTA. However, this performance is not statistically different from the MTA performance when tested with a Wilcoxon signed-rank test (P=`r wilcox.test(metal$res["metal.1","0.5","140",], rmta$res$mta["0.05","0.98","40",], paired=TRUE)$p.value`). Upon closer inspection this appears to be due to that there exist cases where MeTAL was giving good predictions while MTA did not, and also among the cases where both MTA and MeTAL gave better than top 10% performance, the ground truth reaction was ranked higher by MeTAL than MTA. In total 34 out of the 58 datasets can have their ground truth reactions predicted among the top 10% in either MTA or MeTAL. Therefore, it appears that further efforts should seek to combine MTA and MeTAL in an informed manner to achieve even better prediction performances.
 
 ```{r mta-metal-pars, fig.cap="Evaluation of the prediction performance of MeTAL on 58 human datasets using different parameters.", fig.width=5, fig.height=2}
 mat <- metal$summ.cnt$metal.1[5:1,]
@@ -140,7 +143,33 @@ Heatmap(mat,
 
 Another potential issue in the design of the original MTA is a more biologically informed one. Specifically, the original MTA essentially evaluates the capacity of a reaction KO in allowing or supporting the transformation in the desired direction. Nevertheless, there is no guarantee that the system will actually shift in the specific desired direction upon the reaction KO. In theory, it is possible that the same KO can support the transformation in another independent direction equally well, or even better, but MTA does not assess the capacity of the KO model in supporting the transformation in any other arbitrary and irrelevant direction. In other words, the MTA prediction does not consider the specificity of the KO in terms of realizing the desired transformation, and therefore in theory a reaction KO with a high MTA score is not necessarily a good candidate for realizing the desired transformation. This same issue also applies to the MeTAL method as described above. To address this issue, conceptually we can run MTA (or MeTAL) repeatedly using different random transformations (i.e. random sets of $R_S$, $R_F$, and $R_B$ reactions) for each reaction KO, then compare the resulting distribution of MTA scores (or optimal MeTAL objective function values) to that obtained using the actual desired transformation. However, to reduce the computational burden, a most simple approach is to only run an additional MTA (or MeTAL) for each KO using the opposite transformation as desired. Specifically, after mapping DE results via APR to intended directions of changes in the activity levels of the reactions, reverse the directions before using them to define the $R_F$, $R_B$, and $R_{rr}$ (for MeTAL only) reaction sets. The $R_S$ set should remain the same. Then the final "corrected" MTA score (or MeTAL objective function value) is the value obtained from the desired transformation minus that obtained from the opposite transformation. I termed this modified procedure mMTA for "multiple" MTA, or mMeTAL when applied to MeTAL.
 
-Next, evaluating the performance of mMTA and mMeTAL on the 58 validation datasets, I found that both mMTA and mMeTAL showed large improvement compared to MTA and MeTAL, respectively. In particular, mMeTAL showed drastic improvement in performance compared to MeTAL, with improvement in almost all parameter combinations tested (Figure \@ref(fig:mta-mmetal-pars)), in the best case recovering the ground truth among top 10% predictions in 34 datasets. 
+Next, evaluating the performance of mMTA and mMeTAL on the 58 validation datasets, I found that both mMTA and mMeTAL showed large improvement compared to MTA and MeTAL, respectively. mMTA achieved "better than top 10%" performance in up to 35 out of the 58 datasets under optimal parameter combinations, which interestingly involves very small n and $\epsilon_i$ values (Figure \@ref(fig:mta-mmta-pars)). mMeTAL showed particularly drastic improvement in performance compared to MeTAL, with improvement in almost all parameter combinations tested (Figure \@ref(fig:mta-mmetal-pars)), in the best case recovering the ground truth among top 10% predictions in 34 datasets. The best parameter for mMeTAL also involves the choice of very small n value (n=10). mMeTAL thus can achieve nearly equivalent performance with mMTA, while being more computationally efficient due to its formulation as an LP problem rather than an MIQP problem. 
+
+```{r mta-mmta-pars, fig.cap="Evaluation of the prediction performance of mMTA on 58 human datasets using different parameters.", fig.width=5, fig.height=7}
+colf <- colorRamp2(c(5,15,30), c("grey95","orange","red"))
+tmpf <- function(i) {
+  mat <- rmta$summ.cnt$mmta[[i]][6:1,]
+  hm <- Heatmap(mat, 
+        name="#datasets\n ground truth\n among top 10%",
+        row_title=sprintf("alpha=%s\n\n epsilon",i),
+        row_names_side="left",
+        cluster_rows=FALSE,
+        column_title=NULL,
+        column_title_side="bottom",
+        column_names_side="bottom",
+        cluster_columns=FALSE,
+        col=colf,
+        cell_fun=function(j, i, x, y, width, height, fill) grid.text(sprintf("%d", mat[i,j]), x, y, gp=gpar(fontsize=10))
+        )
+}
+
+hm <- tmpf(names(rmta$summ.cnt$mmta)[length(rmta$summ.cnt$mmta)])
+for (i in rev(names(rmta$summ.cnt$mmta)[-length(rmta$summ.cnt$mmta)])) {
+  hm <- hm %v% tmpf(i)
+}
+
+draw(hm, column_title="n", column_title_side="bottom")
+```
 
 ```{r mta-mmetal-pars, fig.cap="Evaluation of the prediction performance of mMeTAL on 58 human datasets using different parameters.", fig.width=5, fig.height=2}
 mat <- metal$summ.cnt$mmetal.1[5:1,]
@@ -175,16 +204,43 @@ $$
 
 Then an MTA score corresponding to the MOMA optimal solution is computed in the same way as in the original MTA, this score was termed $mTS$ for "MOMA transformation score", and was used for the unresolved cases as the final score. Besides, to ensure that the resolved cases will get higher final scores to reflect the high confidence levels associated with those predictions, MOMA was also performed for these resolved cases and the final score for these resolved cases is computed as $k\centerdot mTS \centerdot (bTS-wTS)$ where $k$ is a fixed large number such as 100 (according to the authors of [@valcarcel_rmta_2019]) to ensure that these resolved reaction KO's get higher scores.
 
-I next comprehensively evaluated rMTA on the 58 human datasets I collected, and compared it to all the other MTA variants. Consistent with the claimed superior performance, rMTA indeed showed the best predictive accuracy that far exceeded the other algorithms, successfully predicting the "ground truth" reaction among top 10% predictions in as many as 34 out of the 58 datasets. Surprisingly, the rMTA performance was not seen to be affected at all by the change in the MTA parameters $\alpha$ and $\epsilon_i$. Since in rMTA, the score from MOMA is independent of these MTA parameters and only dependent on the number of top DE genes ($n$), this suggests that the improved performance of rMTA can be completely attributed to the adoption of the independent MOMA algorithm. I therefore evaluated the predictive performance of the MOMA algorithm, i.e. based on the $mTS$ score alone. Indeed, MOMA achieved identical performance to rMTA. This suggests that the improvement of rMTA is largely due to the adoption of MOMA in its pipeline. This was not pointed out by the authors of rMTA [@valcarcel_rmta_2019] and not demonstrated in their testing. Here based on a large collection of 58 datasets, the benchmark results do indicate that the performance of rMTA and MOMA is indistinguishable (Figure \@ref(fig:mta-rmta-vs-moma)).
+I next comprehensively evaluated rMTA on the 58 human datasets I collected, and compared it to all the other MTA variants. Consistent with the claimed superior performance, rMTA indeed performed better than the original MTA, but its performance is very similar to mMTA (as well as mMeTAL), successfully predicting the "ground truth" reaction among top 10% predictions in as many as 35 out of the 58 datasets. Surprisingly, unlike mMTA, the rMTA performance was not seen to be affected much at all by the change in the MTA parameters $\alpha$ and $\epsilon_i$ (Figure \@ref(fig:mta-rmta-pars)). Since in rMTA, the score from MOMA is independent of these MTA parameters and only dependent on the number of top DE genes ($n$), this suggests that the improved performance of rMTA may be largely attributed to the adoption of the independent MOMA algorithm. I therefore evaluated the predictive performance of the MOMA algorithm, i.e. based on the $mTS$ score alone. Indeed, MOMA achieved almost identical performance to rMTA (Figure \@ref(fig:mta-moma)), although with the best parameter combination in rMTA there is one more dataset with its "ground truth" reaction among top 10% predictions compared to MOMA. Comparing the predicted percentage ranks of the "ground truth" reactions across datasets, I found that the correlation between the ranks of rMTA and MOMA is almost perfect, while the correlation between the ranks of rMTA and mMTA is much weaker (Appendix Figure \@ref(fig:mta-rmta-vs-moma-and-mmta)). This suggests that the improvement of rMTA is largely due to the adoption of MOMA in its pipeline. This was not pointed out by the authors of rMTA [@valcarcel_rmta_2019] and not demonstrated in their testing.
 
-```{r mta-rmta-vs-moma, fig.cap="Evaluation of the prediction performance of rMTA and MOMA on 58 human datasets using different parameters.", fig.width=5, fig.height=2}
-mat <- metal$summ.cnt$moma[5:1,]
+```{r mta-rmta-pars, fig.cap="Evaluation of the prediction performance of rMTA on 58 human datasets using different parameters.", fig.width=5, fig.height=7}
+colf <- colorRamp2(c(5,15,30), c("grey95","orange","red"))
+tmpf <- function(i) {
+  mat <- rmta$summ.cnt$rmta[[i]][6:1,]
+  hm <- Heatmap(mat, 
+        name="#datasets\n ground truth\n among top 10%",
+        row_title=sprintf("alpha=%s\n\n epsilon",i),
+        row_names_side="left",
+        cluster_rows=FALSE,
+        column_title=NULL,
+        column_title_side="bottom",
+        column_names_side="bottom",
+        cluster_columns=FALSE,
+        col=colf,
+        cell_fun=function(j, i, x, y, width, height, fill) grid.text(sprintf("%d", mat[i,j]), x, y, gp=gpar(fontsize=10))
+        )
+}
+
+hm <- tmpf(names(rmta$summ.cnt$rmta)[length(rmta$summ.cnt$rmta)])
+for (i in rev(names(rmta$summ.cnt$rmta)[-length(rmta$summ.cnt$rmta)])) {
+  hm <- hm %v% tmpf(i)
+}
+
+draw(hm, column_title="n", column_title_side="bottom")
+```
+
+```{r mta-moma, fig.cap="Evaluation of the prediction performance of MOMA on 58 human datasets using different parameters.", fig.width=5, fig.height=1.5}
+mat <- rmta$summ.cnt$moma[[1]][1,,drop=FALSE]
+rownames(mat) <- NULL
 colf <- colorRamp2(c(5,15,30), c("grey95","orange","red"))
 Heatmap(mat, 
         col=colf,
         name="#datasets\n ground truth\n among top 10%",
-        row_title="alpha",
-        row_names_side="left",
+        row_title=NULL,
+        #row_names_side="left",
         cluster_rows=FALSE,
         column_title="n",
         column_title_side="bottom",
@@ -194,7 +250,82 @@ Heatmap(mat,
 )
 ```
 
-From the MOMA results, we see that it produced the best performance when only the very few top DE genes (i.e. $n=10$) were picked. Therefore the predictions were driven by top DE genes. When further assigning higher weight to the top changes by scoring the MOMA solution using the MeTAL objective function, while setting high $\alpha$ values, the best-case prediction performance is increased even further (36/58 datasets have ground truth within top 10% predictions; Figure \@ref(fig:mta-moma-pars)). These observations raise two important questions: 1. how well the ground truth genes (i.e. the actual genes being KO/KD-ed or proteins being inhibited) can be directly predicted from the DE results, how does it compare to the metabolic modeling-based predictions, and whether the latter approach provides additional value; 2. whether the performances exhibited by the different MTA variants, especially rMTA/MOMA, were completely attributed to that the ground truth genes are among the top DE genes used as input to these metabolic modeling algorithms.
+In Figure \@ref(fig:mta-benchmark), I summarized the predicted percentage ranks of the ground truth reactions across all the 58 datasets using the various algorithms (MTA, mMTA, rMTA, MOMA, MeTAL, mMeTAL). The X-axis datasets are ordered by the predicted percentage ranks of rMTA, which is mostly highly similar to MOMA except in three cases, two where MOMA performed drastically worse while the other where MOMA performed drastically better than rMTA. We see that in most cases where rMTA/MOMA performed good (i.e. achieving "better than top 10%" performance), mMTA also achieved very similar predicted percentage ranks. mMeTAL however, had lower predicted percentage ranks in many cases, despite still being among the top 10%. MTA and MeTAL on the other hand had more fluctuation in performance, sometimes dropping well below top 25%. Interestingly though, in the datasets where rMTA performed poorly, MTA and/or MeTAL can have much better predicted percentage ranks. In the future it may be desirable to develop informed workflows for combining multiple algorithms in order to achieve even better overall predictive performance.
+
+```{r, eval=FALSE, include=FALSE}
+summ <- data.table(dataset=1:58, y=100,
+  MTA=rmta$res$mta["0.05","0.98","40",]*100,
+  MeTAL=metal$res["metal.1","0.5","140",]*100,
+  mMTA=rmta$res$mmta["1e-04","0.98","10",]*100,
+  mMeTAL=metal$res["mmetal.1","0.1","10",]*100,
+  rMTA=rmta$res$rmta["1e-04","0.1","10",]*100,
+  MOMA=rmta$res$moma["1e-04","0.1","10",]*100
+)
+summ <- summ[order(rMTA)]
+summ[, dataset:=1:58]
+
+ggplot(summ, aes(x=dataset, y=y)) +
+  geom_bar(stat="identity", fill="grey90") +
+  ylab("% Rank in Prediction") +
+  xlab("Dataset #") +
+  scale_y_reverse() +
+  geom_hline(yintercept=10, color="black", linetype="dashed", size=0.4) + 
+  annotate("text", label="Top 10%", x=48, y=5, color="darkred", size=4.5) +
+  geom_crossbar(aes(y=MTA, ymin=MTA, ymax=MTA, color="MTA")) +
+  geom_crossbar(aes(y=MeTAL, ymin=MeTAL, ymax=MeTAL, color="MeTAL")) +
+  geom_crossbar(aes(y=mMTA, ymin=mMTA, ymax=mMTA, color="mMTA")) +
+  geom_crossbar(aes(y=mMeTAL, ymin=mMeTAL, ymax=mMeTAL, color="mMeTAL")) +
+  geom_crossbar(aes(y=rMTA, ymin=rMTA, ymax=rMTA, color="rMTA")) +
+  geom_crossbar(aes(y=MOMA, ymin=MOMA, ymax=MOMA, color="MOMA")) +
+  scale_colour_manual(name="", values=brewer.pal(n=6, name="Set1"), breaks=c("MTA","MeTAL","mMTA","mMeTAL","rMTA","MOMA")) +
+  theme_classic() +
+  theme(
+    axis.title.x=element_text(size=14),
+    axis.text.x=element_text(size=12),
+    axis.title.y=element_text(size=14),
+    axis.text.y=element_text(size=12),
+    legend.title=element_blank(),
+    legend.text=element_text(size=12),
+    legend.position="bottom"
+  )
+```
+
+```{r mta-benchmark, fig.cap="Summary of the predicted percentage ranks of the ground truth reactions across all the 58 datasets using the various algorithms with their optimal parameters.", fig.width=6, fig.height=2.8}
+od <- order(rmta$res$rmta["1e-04","0.1","10",])
+summ1 <- data.table(dataset=rep(1:58, 6), method=rep(c("MTA","MeTAL","mMTA","mMeTAL","rMTA","MOMA"), each=58),
+                   y=100*c(
+  rmta$res$mta["0.05","0.98","40",][od],
+  metal$res["metal.1","0.5","140",][od],
+  rmta$res$mmta["1e-04","0.98","10",][od],
+  metal$res["mmetal.1","0.1","10",][od],
+  rmta$res$rmta["1e-04","0.1","10",][od],
+  rmta$res$moma["1e-04","0.1","10",][od])
+)
+
+ggplot(summ1, aes(x=dataset, y=y)) +
+  ylab("% Rank in Prediction") +
+  xlab("Dataset #") +
+  scale_y_reverse() +
+  geom_line(aes(x=dataset, y=y, group=method, color=method)) +
+  scale_color_brewer(palette="Set1") +
+  geom_hline(yintercept=10, color="black", linetype="dashed", size=0.4) + 
+  annotate("text", label="Top 10%", x=57, y=5, color="black", size=4.5) +
+  theme(
+    panel.background=element_rect(fill="grey80"),
+    panel.grid=element_blank(),
+    axis.title.x=element_text(size=14),
+    axis.text.x=element_text(size=12),
+    axis.title.y=element_text(size=14),
+    axis.text.y=element_text(size=12),
+    legend.title=element_blank(),
+    legend.text=element_text(size=12),
+    legend.position="bottom"
+  )
+```
+
+### Comparison of the metabolic modeling-based algorithms with gene expression-based analysis
+
+From the various metabolic modeling-based prediction results, we see that they tend to produce the best performance when only the very few top DE genes (i.e. as small as $n=10$) were picked. Therefore the predictions appeared to be driven by top DE genes. When further assigning higher weight to the top changes by scoring the MOMA solution using the MeTAL objective function, while setting high $\alpha$ values, the best-case prediction performance is increased even further (36/58 datasets have ground truth within top 10% predictions; Figure \@ref(fig:mta-moma-pars)). These observations raise two important questions: 1. how well the ground truth genes (i.e. the actual genes being KO/KD-ed or proteins being inhibited) can be directly predicted from the DE results, how does it compare to the metabolic modeling-based predictions, and whether the latter approach provides additional value; 2. whether the performances exhibited by the different MTA variants, especially rMTA/MOMA, were completely attributed to that the ground truth genes are among the top DE genes used as input to these metabolic modeling algorithms.
 
 ```{r mta-moma-pars, fig.cap="Evaluation of the prediction performance of MOMA on 58 human datasets using the MeTAL objective function with different parameter values.", fig.width=5, fig.height=2}
 mat <- metal$summ.cnt$moma.1[5:1,]
@@ -213,9 +344,45 @@ Heatmap(mat,
 )
 ```
 
-To investigate the first question, I examined the percentage ranks (by DE log fold-change values) of the ground truth genes in each dataset, among only the metabolic genes present in the GEM to ensure comparability to the prediction performances obtained from the modeling algorithms. I found that in 49 out of the 58 datasets, the ground truth genes are actually among the top 10% metabolic DE genes. This number of much higher than that achieved by the various metabolic modeling-based algorithms. However, for the other 9 datasets where the ground truth gene is not among the top 10% metabolic DE genes (it happened that in these datasets the ground truth genes are all ranked >20% by DE log fold-change), the various MTA variants can successfully recover the ground truth among the top 10% or even top 5% predictions in as many as 6 out of the 9 datasets (Appendix Figure \@ref(fig:mta-de-gt-20)). This suggests that the modeling-based approach can identify the true perturbed gene/reaction in cases where the DE results do not provide direct clue on the ground truth, and it is in these cases that the modeling-based approach is a valuable complement to the DE-based analysis.
+To investigate the first question, I examined the percentage ranks (by DE log fold-change values) of the ground truth genes in each dataset, among only the metabolic genes present in the GEM to ensure comparability to the prediction performances obtained from the modeling algorithms. I found that in 49 out of the 58 datasets, the ground truth genes are actually among the top 10% metabolic DE genes. This number of much higher than that achieved by the various metabolic modeling-based algorithms. However, for the other 9 datasets where the ground truth gene is not among the top 10% metabolic DE genes (it happened that in these datasets the ground truth genes are all ranked >20% by DE log fold-change), the various MTA variants can successfully recover the ground truth among the top 10% or even top 5% predictions in as many as 6 out of the 9 datasets (Figure \@ref(fig:mta-de-gt-20)). This suggests that the modeling-based approach can identify the true perturbed gene/reaction in cases where the DE results do not provide direct clue on the ground truth, and it is in these cases that the modeling-based approach is a valuable complement to the DE-based analysis.
 
-To investigate the second question, I performed control analysis where the ground truth gene was removed from the DE result given as the input to the various MTA variants, so that the modeling algorithms cannot directly rely on the information of the change in the ground truth gene/reaction. In this analysis, the performance of all algorithms decreased. In the optimal parameter setting, both MOMA and mMeTAL showed "better than top 10%" performance in 23 datasets (Appendix Figure \@ref(fig:mta-de-rm-ctrl)). This suggests that in many datasets, the accurate prediction is dependent on the ground truth gene present among the top DE genes passed to the metabolic modeling algorithms, although this is not needed for the algorithms to make successful predictions in still a significant number of datasets.
+```{r mta-de-gt-20, fig.cap="Summary of the predicted percentage ranks of the ground truth reactions across all the 9 datasets where the ground truth gene is not among the top 20% DE genes, using the various algorithms with their optimal parameters.", fig.width=6, fig.height=2.8}
+de.ranks <- readRDS("data/mta/de.rank.rds")
+od <- names(de.ranks)[de.ranks>0.2] # 9 datasets, >0.1 gives the same
+
+summ2 <- data.table(dataset=rep(1:length(od), 7), method=rep(c("MTA","MeTAL","mMTA","mMeTAL","rMTA","MOMA","DE"), each=length(od)),
+                   y=100*c(
+  rmta$res$mta["0.05","0.98","40",][od],
+  metal$res["metal.1","0.5","140",][od],
+  rmta$res$mmta["1e-04","0.98","10",][od],
+  metal$res["mmetal.1","0.1","10",][od],
+  rmta$res$rmta["1e-04","0.1","10",][od],
+  rmta$res$moma["1e-04","0.1","10",][od],
+  de.ranks[od])
+)
+
+ggplot(summ2, aes(x=dataset, y=y)) +
+  ylab("% Rank in Prediction") +
+  xlab("Dataset #") +
+  scale_y_reverse() +
+  geom_line(aes(x=dataset, y=y, group=method, color=method)) +
+  scale_color_brewer(palette="Set1") +
+  geom_hline(yintercept=10, color="black", linetype="dashed", size=0.4) + 
+  annotate("text", label="Top 10%", x=9, y=5, color="black", size=4.5) +
+  theme(
+    panel.background=element_rect(fill="grey80"),
+    panel.grid=element_blank(),
+    axis.title.x=element_text(size=14),
+    axis.text.x=element_text(size=12),
+    axis.title.y=element_text(size=14),
+    axis.text.y=element_text(size=12),
+    legend.title=element_blank(),
+    legend.text=element_text(size=12),
+    legend.position="bottom"
+  )
+```
+
+To investigate the second question, I performed control analysis where the ground truth gene was removed from the DE result given as the input to the various MTA variants, so that the modeling algorithms cannot directly rely on the information of the change in the ground truth gene/reaction. In this analysis, the performance of all algorithms decreased. In the optimal parameter setting, both MOMA and mMeTAL showed "better than top 10%" performance in 23 datasets, and for rMTA, 24 datasets (Appendix Figures \@ref(fig:mta-rmta-de-rm-ctrl), \@ref(fig:mta-mmetal-de-rm-ctrl), \@ref(fig:mta-moma-de-rm-ctrl)). This suggests that in many datasets, the accurate prediction is dependent on the ground truth gene present among the top DE genes passed to the metabolic modeling algorithms, although this is not needed for the algorithms to make successful predictions in still a significant number of datasets.
 
 ## Materials and Methods
 

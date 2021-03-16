@@ -4,6 +4,14 @@
 `r if(!knitr:::is_latex_output()) '# (APPENDIX) Appendix {-}'` 
 -->
 
+```{r, include=FALSE}
+library(my.utils)
+library(gembox)
+library(ComplexHeatmap)
+library(circlize)
+library(cowplot)
+```
+
 # Appendices {-}
 
 Additional figures and tables for each chapter are given below.
@@ -22,15 +30,49 @@ knitr::kable(tmp, format="latex",
 )# %>% kableExtra::kable_styling(latex_options="scale_down")
 ```
 
-```{r mta-de-gt-20, fig.cap="The prediction performance of mMeTAL in the 9 datasets where the ground truth gene is not among the top 20% DE genes.", fig.width=5, fig.height=2}
-metal <- new.env()
-load("data/mta/rmetal.check.res.RData", envir=metal)
-de.ranks <- readRDS("data/mta/de.rank.rds")
-tmp <- metal$res[,,,names(de.ranks)[de.ranks>0.2]] # 9 datasets, >0.1 gives the same
+```{r mta-rmta-vs-moma-and-mmta, fig.cap="Comparison of the predicted percentage ranks of the ground truth reactions across datasets from rMTA, mMTA and MOMA, with the best parameter combinations.", fig.width=4.5, fig.height=2}
+rmta <- new.env()
+load("data/mta/rmta.check.res.RData", envir=rmta)
+a <- qplot(x=rmta$res$rmta["1e-04","0.1","10",]*100, y=rmta$res$moma["1e-04","0.1","10",]*100, xlab="rMTA %rank", ylab="MOMA %rank") + theme_classic()
+b <- qplot(x=rmta$res$rmta["1e-04","0.1","10",]*100, y=rmta$res$mmta["1e-04","0.98","10",]*100, xlab="rMTA %rank", ylab="mMTA %rank") + theme_classic()
+plot_grid(a, b, nrow=1)
+```
 
-tmpf <- function(id) {
-mat <- apply(tmp[id,,,], 2, function(x) rowSums(x<0.1))
-colf <- colorRamp2(c(0,5,9), c("grey95","orange","red"))
+```{r mta-rmta-de-rm-ctrl, fig.cap="The prediction performance of rMTA across datasets with various parameters, after removing the ground truth gene from the DE result given as the input to rMTA.", fig.width=5, fig.height=7}
+rmta.rm <- new.env()
+load("data/mta/rmta.rm.true.gene.res.RData", envir=rmta.rm)
+
+colf <- colorRamp2(c(5,15,30), c("grey95","orange","red"))
+tmpf <- function(i) {
+  mat <- rmta.rm$summ.cnt$rmta[[i]][6:1,]
+  hm <- Heatmap(mat, 
+        name="#datasets\n ground truth\n among top 10%",
+        row_title=sprintf("alpha=%s\n\n epsilon",i),
+        row_names_side="left",
+        cluster_rows=FALSE,
+        column_title=NULL,
+        column_title_side="bottom",
+        column_names_side="bottom",
+        cluster_columns=FALSE,
+        col=colf,
+        cell_fun=function(j, i, x, y, width, height, fill) grid.text(sprintf("%d", mat[i,j]), x, y, gp=gpar(fontsize=10))
+        )
+}
+
+hm <- tmpf(names(rmta.rm$summ.cnt$rmta)[length(rmta.rm$summ.cnt$rmta)])
+for (i in rev(names(rmta.rm$summ.cnt$rmta)[-length(rmta.rm$summ.cnt$rmta)])) {
+  hm <- hm %v% tmpf(i)
+}
+
+draw(hm, column_title="n", column_title_side="bottom")
+```
+
+```{r mta-mmetal-de-rm-ctrl, fig.cap="The prediction performance of mMeTAL across datasets with various parameters, after removing the ground truth gene from the DE result given as the input to mMeTAL.", fig.width=5, fig.height=2}
+rmetal.rm <- new.env()
+load("data/mta/rmetal.rm.true.gene.res.RData", envir=rmetal.rm)
+
+mat <- rmetal.rm$summ.cnt$mmetal.1
+colf <- colorRamp2(c(0,15,30), c("grey95","orange","red"))
 Heatmap(mat, 
         col=colf,
         name="#datasets\n ground truth\n among top 10%",
@@ -43,21 +85,17 @@ Heatmap(mat,
         cluster_columns=FALSE,
         cell_fun=function(j, i, x, y, width, height, fill) grid.text(sprintf("%d", mat[i,j]), x, y, gp=gpar(fontsize=10))
 )
-}
-tmpf("mmetal.1")
 ```
 
-```{r mta-de-rm-ctrl, fig.cap="The prediction performance of mMeTAL in the 9 datasets where the ground truth gene is not among the top 20% DE genes.", fig.width=5, fig.height=2}
-rmetal.rm <- new.env()
-load("data/mta/rmetal.rm.true.gene.res.RData", envir=rmetal.rm)
-
-mat <- rmetal.rm$summ.cnt$mmetal.1
-colf <- colorRamp2(c(0,15,30), c("grey95","orange","red"))
+```{r mta-moma-de-rm-ctrl, fig.cap="The prediction performance of MOMA across datasets with various parameters, after removing the ground truth gene from the DE result given as the input to MOMA.", fig.width=5, fig.height=1.5}
+mat <- rmta.rm$summ.cnt$moma[[1]][1,,drop=FALSE]
+rownames(mat) <- NULL
+colf <- colorRamp2(c(5,15,30), c("grey95","orange","red"))
 Heatmap(mat, 
         col=colf,
         name="#datasets\n ground truth\n among top 10%",
-        row_title="alpha",
-        row_names_side="left",
+        row_title=NULL,
+        #row_names_side="left",
         cluster_rows=FALSE,
         column_title="n",
         column_title_side="bottom",
